@@ -42,7 +42,7 @@ function MixtureCriterion:updateOutput(input, target)
     local sigmaEnd = muEnd + self.sizeCovarianceInput
     local sigma_t = input[{{},{sigmaStart,sigmaEnd}}]
 
-    local covarianceTensor = torch.zeros(batchSize, self.sizeMixture, self.dimInput, self.dimInput)
+    local sigmaTensor = torch.zeros(batchSize, self.sizeMixture, self.dimInput, self.dimInput)
 
     -- Produce a full covariance matrix from values in sigma_t
     if isCovarianceFull then
@@ -50,11 +50,11 @@ function MixtureCriterion:updateOutput(input, target)
             for j = 1, self.dimInput do
                 for mixCount = 0, self.sizeMixture - 1 do
                     if j <= i then
-                        covariancePoint = sigma_t[{{},{(i * (i-1))/2 + j + mixCount}}]
+                        sigmaPoint = sigma_t[{{},{(i * (i-1))/2 + j + mixCount}}]
                     else
-                        covariancePoint = sigma_t[{{},{(j * (j-1))/2 + i + mixCount}}]
+                        sigmaPoint = sigma_t[{{},{(j * (j-1))/2 + i + mixCount}}]
                     end
-                    covarianceTensor[{{}, {mixCount + 1}, {i}, {j}}] = covariancePoint:clone()
+                    sigmaTensor[{{}, {mixCount + 1}, {i}, {j}}] = sigmaPoint:clone()
                 end
             end
         end
@@ -63,8 +63,8 @@ function MixtureCriterion:updateOutput(input, target)
     else
         for i = 1, self.dimInput do
             for mixCount = 0, self.sizeMixture - 1 do
-                covariancePoint = sigma_t[{{},{i + mixCount}]
-                covarianceTensor[{{}, {mixCount + 1}, {i}, {i}}] = covariancePoint:clone()
+                sigmaPoint = sigma_t[{{},{i + mixCount}]
+                sigmaTensor[{{}, {mixCount + 1}, {i}, {i}}] = sigmaPoint:clone()
             end 
         end
     end
