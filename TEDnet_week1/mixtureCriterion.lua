@@ -42,6 +42,7 @@ function MixtureCriterion:updateOutput(input, target)
     local sigmaEnd = muEnd + self.sizeCovarianceInput
     local sigma_t = input[{{},{sigmaStart,sigmaEnd}}]
 
+    --TODO add batchSize to CMD
     local sigmaTensor = torch.zeros(batchSize, self.sizeMixture, self.dimInput, self.dimInput)
 
     -- Produce a full covariance matrix from values in sigma_t
