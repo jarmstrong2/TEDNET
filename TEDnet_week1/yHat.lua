@@ -21,9 +21,11 @@ function YHat:updateOutput(input)
     local piStart = 1
     local piEnd = self.sizeMixture
     local hat_pi_t = input[{{},{piStart,piEnd}}]
+
     local muStart = piEnd + 1
     local muEnd = piEnd + self.sizeMeanInput
     local hat_mu_t = input[{{},{muStart,muEnd}}]
+
     local sigmaStart = muEnd + 1
     local sigmaEnd = muEnd + self.sizeCovarianceInput
     local hat_sigma_t = input[{{},{sigmaStart,sigmaEnd}}]
@@ -47,23 +49,27 @@ function YHat:updateGradInput(input, gradOutput)
     local piStart = 1
     local piEnd = self.sizeMixture
     local hat_pi_t = input[{{},{piStart,piEnd}}]
+
     local muStart = piEnd + 1
     local muEnd = piEnd + self.sizeMeanInput
     local hat_mu_t = input[{{},{muStart,muEnd}}]
+
     local sigmaStart = muEnd + 1
     local sigmaEnd = muEnd + self.sizeCovarianceInput
     local hat_sigma_t = input[{{},{sigmaStart,sigmaEnd}}]
 
-    local d_pi_t = gradOutput[{{},{piStart,piEnd}}]
-    local d_mu_t = gradOutput[{{},{muStart,muEnd}}]
-    local d_sigma_t = gradOutput[{{},{sigmaStart,sigmaEnd}}]
+    local d_hat_pi_t = self.pi_t_act:backward(hat_pi_t, 
+        gradOutput[{{},{piStart,piEnd}}])
+    local d_hat_mu_t = gradOutput[{{},{muStart,muEnd}}]
+    local d_hat_sigma_t = self.sigma_t_act:backward(hat_sigma_t, 
+        gradOutput[{{},{sigmaStart,sigmaEnd}}])
 
-    local grad_pi_t = d_pi_t:clone()
-    local grad_mu_t = d_mu_t:clone()
-    local grad_sigma_t = d_sigma_t:clone()
+    local grad_hat_pi_t = d_hat_pi_t:clone()
+    local grad_hat_mu_t = d_hat_mu_t:clone()
+    local grad_hat_sigma_t = d_hat_sigma_t:clone()
         
-    local grad_input = torch.cat(grad_pi_t:float(), grad_mu_t:float(), 2)
-    grad_input = torch.cat(grad_input, grad_sigma_t:float(), 2)
+    local grad_input = torch.cat(grad_hat_pi_t:float(), grad_hat_mu_t:float(), 2)
+    grad_input = torch.cat(grad_input, grad_hat_sigma_t:float(), 2)
     
     self.gradInput = grad_input:cuda()
     
