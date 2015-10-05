@@ -2,11 +2,19 @@ require 'nn'
 
 local YHat, parent = torch.class('nn.YHat', 'nn.Module')
 
-function YHat:__init(dimInput, numMixture)
+function YHat:__init(dimInput, numMixture, ifCovarianceFull)
    parent.__init(self)
    self.sizeMixture = numMixture
    self.sizeMeanInput = dimInput * numMixture
-   self.sizeCovarianceInput = (((dimInput)*(dimInput+1))/2) * numMixture
+
+   -- if flag ifCovarianceFull true then input represents fill covariance
+   if ifCovarianceFull then
+        self.sizeCovarianceInput = (((dimInput)*(dimInput+1))/2) * numMixture
+   
+   -- otherwise the input represents the main axis of a diagonal covariance
+   else
+        self.sizeCovarianceInput = dimInput * numMixture
+   end
 end
 
 function YHat:updateOutput(input)
