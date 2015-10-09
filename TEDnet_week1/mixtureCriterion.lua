@@ -106,5 +106,25 @@ function MixtureCriterion:updateOutput(input, target)
 end
 
 function MixtureCriterion:updateGradInput(input, target)
+    xTarget = target:clone()
+    batchSize = xTarget:size(1)
+
+    local piStart = 1
+    local piEnd = self.sizeMixture
+    local pi_t = input[{{},{piStart,piEnd}}]
+
+    local muStart = piEnd + 1
+    local muEnd = piEnd + self.sizeMeanInput
+    local mu_t = input[{{},{muStart,muEnd}}]
+
+    local sigmaStart = muEnd + 1
+    local sigmaEnd = muEnd + self.sizeCovarianceInput
+    local sigma_t = input[{{},{sigmaStart,sigmaEnd}}]
+    
+    if isCovarianceFull then
+        
+    else
+        
+    end
     
 end
