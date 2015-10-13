@@ -188,7 +188,7 @@ function MixtureCriterion:updateGradInput(input, target)
 
         -- TODO add back in cuda
         --self.gradInput = grad_input:cuda()
-        self.gradInput:cmul(self.mask:reshape(self.mask:size(1),1):expand(self.gradInput:size()))
+        --self.gradInput:cmul(self.mask:reshape(self.mask:size(1),1):expand(self.gradInput:size()))
     
         if self.sizeAverage then
             self.gradInput:div(self.gradInput:size(1))
