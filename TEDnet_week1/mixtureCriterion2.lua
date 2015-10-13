@@ -1,6 +1,8 @@
 require 'nn'
 --require 'distributions'
 
+local MixtureCriterion, parent = torch.class('nn.MixtureCriterion', 'nn.Criterion')
+
 -- return multivariate gauss multiplied by their respective mixture 
 -- probabilities
 function MixtureCriterion:getMixMultVarGauss(sigma_t, mu_t, pi_t, xTarget, batchsize)
@@ -35,8 +37,6 @@ function MixtureCriterion:getMixMultVarGauss(sigma_t, mu_t, pi_t, xTarget, batch
     
     return term5
 end
-
-local MixtureCriterion, parent = torch.class('nn.MixtureCriterion', 'nn.Criterion')
 
 function MixtureCriterion:__init(dimInput, numMixture, isCovarianceFull)
    parent.__init(self)
