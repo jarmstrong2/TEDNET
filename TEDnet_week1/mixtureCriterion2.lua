@@ -4,6 +4,7 @@ require 'nn'
 -- return multivariate gauss multiplied by their respective mixture 
 -- probabilities
 function getMixMultVarGauss(sigma_t, mu_t, pi_t, xTarget, batchsize)
+    batchSize = xTarget:size(1)
     local sigmaTensor = sigma_t:clone():resize(batchSize, self.sizeMixture, self.dimInput)
 
     -- in order to perform inverse but with values on diagonal that might be zero
