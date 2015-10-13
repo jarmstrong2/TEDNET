@@ -3,7 +3,7 @@ require 'nn'
 
 -- return multivariate gauss multiplied by their respective mixture 
 -- probabilities
-function getMixMultVarGauss(sigma_t, mu_t, pi_t, xTarget, batchsize)
+function MixtureCriterion:getMixMultVarGauss(sigma_t, mu_t, pi_t, xTarget, batchsize)
     batchSize = xTarget:size(1)
     local sigmaTensor = sigma_t:clone():resize(batchSize, self.sizeMixture, self.dimInput)
 
@@ -99,7 +99,7 @@ function MixtureCriterion:updateOutput(input, target)
     else
         -- get mixture multivariate gaussian distributions on target values
         -- multiplied by respective mixture components
-        local mixGauss = getMixMultVarGauss(sigma_t, mu_t, pi_t, xTarget, batchsize)
+        local mixGauss = self:getMixMultVarGauss(sigma_t, mu_t, pi_t, xTarget, batchsize)
         
         local sumMixGauss = mixGauss:sum(2):squeeze(2)
 
@@ -109,7 +109,7 @@ function MixtureCriterion:updateOutput(input, target)
         -- the loss function result
         lossOutput = torch.mul(logSumGauss, -1):sum() 
 
-        lossOutput:cmul(self.mask)
+        --lossOutput:cmul(self.mask)
 
         if self.sizeAverage then
             lossOutput = lossOutput/batchSize
@@ -140,7 +140,7 @@ function MixtureCriterion:updateGradInput(input, target)
         -- COMPUTE GAMMA
         -- get mixture multivariate gaussian distributions on target values
         -- multiplied by respective mixture components
-        local gammaHat = getMixMultVarGauss(sigma_t, mu_t, pi_t, xTarget, batchsize)
+        local gammaHat = self:getMixMultVarGauss(sigma_t, mu_t, pi_t, xTarget, batchsize)
         
         local sumGammaHat = mixGauss:sum(2)
     
