@@ -147,7 +147,7 @@ function MixtureCriterion:updateGradInput(input, target)
         -- for each entry
         local sumGammaHatExpanded = sumGammaHat:expand(batchsize, self.sizeMixture)
     
-        local gamma = torch.cmul(gammaHat, torch.pow(sumGammaHatExpanded, -1)
+        local gamma = torch.cmul(gammaHat, torch.pow(sumGammaHatExpanded, -1))
     
         -- TERMS FOR DERIVATIVES
         local gammaResized = gamma:clone():resize(batchSize, self.sizeMixture, 1)
