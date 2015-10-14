@@ -1,6 +1,5 @@
 require 'nn'
 require 'cunn'
---require 'distributions'
 
 local MixtureCriterion, parent = torch.class('nn.MixtureCriterion', 'nn.Criterion')
 
@@ -110,7 +109,7 @@ function MixtureCriterion:updateOutput(input, target)
         -- the loss function result
         lossOutput = torch.mul(logSumGauss, -1):sum() 
 
-        --lossOutput:cmul(self.mask)
+        lossOutput:cmul(self.mask)
 
         if self.sizeAverage then
             lossOutput = lossOutput/batchSize
@@ -190,8 +189,8 @@ function MixtureCriterion:updateGradInput(input, target)
         grad_input = torch.cat(grad_input, dl_sigma_t_hat:float())
 
         -- TODO add back in cuda
-        self.gradInput = grad_input:double()
-        --self.gradInput:cmul(self.mask:reshape(self.mask:size(1),1):expand(self.gradInput:size()))
+        self.gradInput = grad_input:cuda()
+        self.gradInput:cmul(self.mask:reshape(self.mask:size(1),1):expand(self.gradInput:size()))
     
         if self.sizeAverage then
             self.gradInput:div(self.gradInput:size(1))
