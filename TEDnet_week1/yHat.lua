@@ -64,7 +64,7 @@ function YHat:updateGradInput(input, gradOutput)
     local d_hat_mu_t = gradOutput[{{},{muStart,muEnd}}]
     local d_hat_sigma_t = gradOutput[{{},{sigmaStart,sigmaEnd}}]
 
-    local grad_hat_pi_t = torch.cmul(d_hat_pi_t, d_hat_pi_t_softmax)
+    local grad_hat_pi_t = torch.cmul(d_hat_pi_t:double(), d_hat_pi_t_softmax)
     local grad_hat_mu_t = d_hat_mu_t:clone()
     local grad_hat_sigma_t = d_hat_sigma_t:clone()
         
