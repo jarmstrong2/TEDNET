@@ -31,7 +31,7 @@ function YHat:updateOutput(input)
     local hat_sigma_t = input[{{},{sigmaStart,sigmaEnd}}]
 
     --self.pi_t_act = self.pi_t_act or nn.SoftMax():cuda()
-   self.pi_t_act = self.pi_t_act or nn.SoftMax()
+    self.pi_t_act = self.pi_t_act or nn.SoftMax()
    
     local pi_t = self.pi_t_act:forward(hat_pi_t)
     local mu_t = hat_mu_t:clone()
