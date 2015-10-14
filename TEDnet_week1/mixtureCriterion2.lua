@@ -188,7 +188,7 @@ function MixtureCriterion:updateGradInput(input, target)
         grad_input = torch.cat(grad_input, dl_sigma_t_hat:float())
 
         -- TODO add back in cuda
-        self.gradInput = grad_input:cuda()
+        self.gradInput = grad_input
         --self.gradInput:cmul(self.mask:reshape(self.mask:size(1),1):expand(self.gradInput:size()))
     
         if self.sizeAverage then
