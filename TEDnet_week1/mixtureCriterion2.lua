@@ -1,4 +1,5 @@
 require 'nn'
+require 'cunn'
 --require 'distributions'
 
 local MixtureCriterion, parent = torch.class('nn.MixtureCriterion', 'nn.Criterion')
