@@ -57,9 +57,9 @@ function YHat:updateGradInput(input, gradOutput)
     local sigmaEnd = muEnd + self.sizeCovarianceInput
     local hat_sigma_t = input[{{},{sigmaStart,sigmaEnd}}]
 
-    --local d_hat_pi_t = self.pi_t_act:backward(hat_pi_t, 
-        --gradOutput[{{},{piStart,piEnd}}])
-    local d_hat_pi_t = gradOutput[{{},{piStart,piEnd}}]
+    local d_hat_pi_t = self.pi_t_act:backward(hat_pi_t, 
+       gradOutput[{{},{piStart,piEnd}}])
+    --local d_hat_pi_t = gradOutput[{{},{piStart,piEnd}}]
     local d_hat_mu_t = gradOutput[{{},{muStart,muEnd}}]
     local d_hat_sigma_t = gradOutput[{{},{sigmaStart,sigmaEnd}}]
 
