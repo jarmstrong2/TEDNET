@@ -194,6 +194,8 @@ function MixtureCriterion:updateGradInput(input, target)
             self.gradInput:div(self.gradInput:size(1))
         end
         
+        print(self.gradInput)
+        
         return self.gradInput
     end
 end
