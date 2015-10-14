@@ -169,7 +169,8 @@ function MixtureCriterion:updateGradInput(input, target)
         local sigmaTensorInverse = torch.pow(sigmaTensor, -1)
         
         -- COMPUTE dL(x)/d(pi_t_hat)
-        local d_pi_t_hat = torch.cmul(gamma, (torch.add(pi_t, -1)))
+        --local d_pi_t_hat = torch.cmul(gamma, (torch.add(pi_t, -1)))
+        local d_pi_t_hat = pi_t - gamma
     
         -- COMPUTE dL(x)/d(mu_t_hat)
         local dl_mu_t_hat = torch.cmul(xMinusMu, sigmaTensorInverse)
