@@ -144,6 +144,8 @@ function MixtureCriterion:updateGradInput(input, target)
         
         local sumGammaHat = torch.sum(gammaHat, 2)
     
+        print(sumGammaHat)
+    
         -- expand to size of matrix gammaHat in order to compute gamma components
         -- for each entry
         local sumGammaHatExpanded = sumGammaHat:expand(batchsize, self.sizeMixture)
