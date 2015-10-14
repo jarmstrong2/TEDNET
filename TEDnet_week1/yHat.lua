@@ -30,8 +30,9 @@ function YHat:updateOutput(input)
     local sigmaEnd = muEnd + self.sizeCovarianceInput
     local hat_sigma_t = input[{{},{sigmaStart,sigmaEnd}}]
 
-    self.pi_t_act = self.pi_t_act or nn.SoftMax():cuda()
-
+    --self.pi_t_act = self.pi_t_act or nn.SoftMax():cuda()
+   self.pi_t_act = self.pi_t_act or nn.SoftMax()
+   
     local pi_t = self.pi_t_act:forward(hat_pi_t)
     local mu_t = hat_mu_t:clone()
     local sigma_t = hat_sigma_t:clone()
