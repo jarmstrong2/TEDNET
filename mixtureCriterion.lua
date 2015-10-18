@@ -151,13 +151,19 @@ function MixtureCriterion:updateGradInput(input, target)
         
         local sumGammaHat = torch.sum(gammaHat, 2)
     
+        print('sumGammaHat')
+        print(sumGammaHat)
+    
         -- expand to size of matrix gammaHat in order to compute gamma components
         -- for each entry
         local sumGammaHatExpanded = sumGammaHat:expand(batchSize, opt.numMixture)
     
+        print('sumGammaHatExpanded')
+        print(sumGammaHatExpanded)
+    
         local gamma = torch.cmul(gammaHat, torch.pow(sumGammaHatExpanded:add(1e-10), -1))
     
-    print('gamma')
+        print('gamma')
         print(gamma)
     
         -- TERMS FOR DERIVATIVES
