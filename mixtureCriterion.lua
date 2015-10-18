@@ -13,13 +13,11 @@ function MixtureCriterion:getMixMultVarGauss(sigma_t, mu_t, pi_t, xTarget, batch
     sigmaTensor:add(1e-10)
 
     -- setting up terms for multivariate gaussian
-    local sigmaTensorInverse = torch.pow(sigmaTensor, -1)
-    local sigmaDetermiant = (torch.cumprod(sigmaTensor, 3)[{{},{},{opt.inputSize}}]):squeeze(3)
-    local muResized = mu_t:clone():resize(batchSize, opt.numMixture, opt.inputSize)
-    local xTargetResized = xTarget:clone():resize(batchSize, 1, opt.inputSize)
-    local xTagetExpanded = xTargetResized:expand(batchSize, opt.numMixture, opt.inputSize)
-    print(xTagetExpanded)
-    print(muResized)
+    local sigmaTensorInverse = torch.pow(sigmaTensor, -1):cuda()
+    local sigmaDetermiant = (torch.cumprod(sigmaTensor, 3)[{{},{},{opt.inputSize}}]):squeeze(3):cuda()
+    local muResized = mu_t:clone():resize(batchSize, opt.numMixture, opt.inputSize):cuda()
+    local xTargetResized = xTarget:clone():resize(batchSize, 1, opt.inputSize):cuda()
+    local xTagetExpanded = xTargetResized:expand(batchSize, opt.numMixture, opt.inputSize):cuda()
     local xMinusMu = xTagetExpanded - muResized
 
     -- first term 1/sqrt(2pi*det(sigma))
