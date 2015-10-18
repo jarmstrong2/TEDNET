@@ -29,9 +29,9 @@ function getOneHotStr(s)
         end
 
         if not oneHotStr then
-            oneHotStr = getOneHotChar(inputchar):double()
+            oneHotStr = getOneHotChar(inputchar):float()
         else
-            oneHotStr = torch.cat(oneHotStr:double(), getOneHotChar(inputchar):double(), 2)
+            oneHotStr = torch.cat(oneHotStr:float(), getOneHotChar(inputchar):float(), 2)
         end
     end
     return oneHotStr:clone()
@@ -60,7 +60,7 @@ function getOneHotStrs(strs)
         oneHot = getOneHotStr(strs[i])
         if charRemain > 0 then
             zeroOneHotVectors = torch.zeros(32, charRemain)
-            finalOneHot = torch.cat(oneHot, zeroOneHotVectors,2)
+            finalOneHot = torch.cat(oneHot:float(), zeroOneHotVectors:float(),2)
             allOneHot[{{i},{},{}}] = finalOneHot:t()
         else
             allOneHot[{{i},{},{}}] = oneHot:t()
