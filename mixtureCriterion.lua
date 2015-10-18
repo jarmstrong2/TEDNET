@@ -107,7 +107,7 @@ function MixtureCriterion:updateOutput(input, target)
         -- the loss function result
         lossOutput = torch.mul(logSumGauss, -1) 
 
-        lossOutput:cmul(self.mask):sum()
+        lossOutput = lossOutput:cmul(self.mask):sum()
 
         if self.sizeAverage then
             lossOutput = lossOutput/batchSize
