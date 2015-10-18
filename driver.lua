@@ -15,7 +15,5 @@ cmd:option('-numMixture' , 10, 'number of mixture components in output layer')
 cmd:text()
 opt = cmd:parse(arg)
 
-print(opt.isCovarianceFull)
-
 dofile('model.lua')
 dofile('train.lua')
