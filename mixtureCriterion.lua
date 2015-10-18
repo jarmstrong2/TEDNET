@@ -12,6 +12,9 @@ function MixtureCriterion:getMixMultVarGauss(sigma_t, mu_t, pi_t, xTarget, batch
     -- in order to perform inverse but with values on diagonal that might be zero
     sigmaTensor:add(1e-10)
 
+    print("sigma")
+    print(sigmaTensor)
+
     -- setting up terms for multivariate gaussian
     local sigmaTensorInverse = torch.pow(sigmaTensor, -1):cuda()
     local sigmaDetermiant = (torch.cumprod(sigmaTensor, 3)[{{},{},{opt.inputSize}}]):squeeze(3):cuda()
