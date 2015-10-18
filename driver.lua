@@ -14,3 +14,6 @@ cmd:option('-numMixture' , 10, 'number of mixture components in output layer')
 
 cmd:text()
 opt = cmd:parse(arg)
+
+dofile('model.lua')
+dofile('train.lua')
