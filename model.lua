@@ -3,7 +3,7 @@ torch.setdefaulttensortype('torch.FloatTensor')
 require 'nn'
 require 'nngraph'
 require 'optim'
-require 'parsevocab'
+require 'getvocab'
 local LSTMH1 = require 'LSTMH1'
 local LSTMHN = require 'LSTMHN'
 require 'window'
