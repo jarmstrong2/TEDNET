@@ -155,7 +155,7 @@ function MixtureCriterion:updateGradInput(input, target)
         -- for each entry
         local sumGammaHatExpanded = sumGammaHat:expand(batchSize, opt.numMixture)
     
-        local gamma = torch.cmul(gammaHat, torch.pow(sumGammaHatExpanded, -1))
+        local gamma = torch.cmul(gammaHat, torch.pow(sumGammaHatExpanded:add(1e-10), -1))
     
     print('gamma')
         print(gamma)
