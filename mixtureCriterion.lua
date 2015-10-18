@@ -17,6 +17,9 @@ function MixtureCriterion:getMixMultVarGauss(sigma_t, mu_t, pi_t, xTarget, batch
 
     -- setting up terms for multivariate gaussian
     local sigmaTensorInverse = torch.pow(sigmaTensor, -1):cuda()
+    
+    print("sigmainv")
+    print(sigmaTensorInverse)
     local sigmaDetermiant = (torch.cumprod(sigmaTensor, 3)[{{},{},{opt.inputSize}}]):squeeze(3):cuda()
     local muResized = mu_t:clone():resize(batchSize, opt.numMixture, opt.inputSize):cuda()
     local xTargetResized = xTarget:clone():resize(batchSize, 1, opt.inputSize):cuda()
