@@ -140,7 +140,7 @@ function MixtureCriterion:updateGradInput(input, target)
         -- multiplied by respective mixture components
         local gammaHat = self:getMixMultVarGauss(sigma_t, mu_t, pi_t, xTarget, batchsize)
         
-        print('gamma')
+        print('gammahat')
         print(gammaHat)
         
         local sumGammaHat = torch.sum(gammaHat, 2)
@@ -150,6 +150,9 @@ function MixtureCriterion:updateGradInput(input, target)
         local sumGammaHatExpanded = sumGammaHat:expand(batchSize, opt.numMixture)
     
         local gamma = torch.cmul(gammaHat, torch.pow(sumGammaHatExpanded, -1))
+    
+    print('gamma')
+        print(gamma)
     
         -- TERMS FOR DERIVATIVES
         local gammaResized = gamma:clone():resize(batchSize, opt.numMixture, 1)
