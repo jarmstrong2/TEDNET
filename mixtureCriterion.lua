@@ -7,21 +7,21 @@ local MixtureCriterion, parent = torch.class('nn.MixtureCriterion', 'nn.Criterio
 -- probabilities
 function MixtureCriterion:getMixMultVarGauss(sigma_t, mu_t, pi_t, xTarget, batchsize)
     batchSize = xTarget:size(1)
-    local sigmaTensor = sigma_t:clone():resize(batchSize, self.sizeMixture, self.dimInput)
+    local sigmaTensor = sigma_t:clone():resize(batchSize, opt.numMixture, opt.inputSize)
 
     -- in order to perform inverse but with values on diagonal that might be zero
     sigmaTensor:add(1e-10)
 
     -- setting up terms for multivariate gaussian
     local sigmaTensorInverse = torch.pow(sigmaTensor, -1)
-    local sigmaDetermiant = (torch.cumprod(sigmaTensor, 3)[{{},{},{self.dimInput}}]):squeeze(3)
-    local muResized = mu_t:clone():resize(batchSize, self.sizeMixture, self.dimInput)
-    local xTargetResized = xTarget:clone():resize(batchSize, 1, self.dimInput)
-    local xTagetExpanded = xTargetResized:expand(batchSize, self.sizeMixture, self.dimInput)
+    local sigmaDetermiant = (torch.cumprod(sigmaTensor, 3)[{{},{},{opt.inputSize}}]):squeeze(3)
+    local muResized = mu_t:clone():resize(batchSize, opt.numMixture, opt.inputSize)
+    local xTargetResized = xTarget:clone():resize(batchSize, 1, opt.inputSize)
+    local xTagetExpanded = xTargetResized:expand(batchSize, opt.numMixture, opt.inputSize)
     local xMinusMu = xTagetExpanded - muResized
 
     -- first term 1/sqrt(2pi*det(sigma))
-    local term1 = torch.mul(sigmaDetermiant, (2*math.pi)^self.dimInput):sqrt():pow(-1)
+    local term1 = torch.mul(sigmaDetermiant, (2*math.pi)^opt.inputSize):sqrt():pow(-1)
 
     -- second term inv(sigma)*(x - mu) element-wise mult
     local term2 = torch.cmul(sigmaTensorInverse, xMinusMu)
@@ -38,19 +38,17 @@ function MixtureCriterion:getMixMultVarGauss(sigma_t, mu_t, pi_t, xTarget, batch
     return term5
 end
 
-function MixtureCriterion:__init(dimInput, numMixture, isCovarianceFull)
+function MixtureCriterion:__init()
    parent.__init(self)
-   self.dimInput = dimInput
-   self.sizeMixture = numMixture
-   self.sizeMeanInput = dimInput * numMixture
+   self.sizeMeanInput = opt.inputSize * opt.numMixture
 
-   -- if flag isCovarianceFull true then input represents fill covariance
-   if isCovarianceFull then
-        self.sizeCovarianceInput = (((dimInput)*(dimInput+1))/2) * numMixture
+   -- if flag opt.isCovarianceFull true then input represents fill covariance
+   if opt.isCovarianceFull then
+        self.sizeCovarianceInput = (((opt.inputSize)*(opt.inputSize+1))/2) * opt.numMixture
    
    -- otherwise the input represents the main axis of a diagonal covariance
    else
-        self.sizeCovarianceInput = dimInput * numMixture
+        self.sizeCovarianceInput = opt.inputSize * opt.numMixture
    end
 end
 
@@ -67,7 +65,7 @@ function MixtureCriterion:updateOutput(input, target)
     batchSize = xTarget:size(1)
 
     local piStart = 1
-    local piEnd = self.sizeMixture
+    local piEnd = opt.numMixture
     local pi_t = input[{{},{piStart,piEnd}}]
 
     local muStart = piEnd + 1
@@ -79,12 +77,12 @@ function MixtureCriterion:updateOutput(input, target)
     local sigma_t = input[{{},{sigmaStart,sigmaEnd}}]
 
     -- Produce a full covariance matrix from values in sigma_t
-    if isCovarianceFull then
+    if opt.isCovarianceFull then
         --TODO add batchSize to CMD
-        local sigmaTensor = torch.zeros(batchSize, self.sizeMixture, self.dimInput, self.dimInput)
-        for i = 1, self.dimInput do
-            for j = 1, self.dimInput do
-                for mixCount = 0, self.sizeMixture - 1 do
+        local sigmaTensor = torch.zeros(batchSize, opt.numMixture, opt.inputSize, opt.inputSize)
+        for i = 1, opt.inputSize do
+            for j = 1, opt.inputSize do
+                for mixCount = 0, opt.numMixture - 1 do
                     if j <= i then
                         sigmaPoint = sigma_t[{{},{(i * (i-1))/2 + j + mixCount}}]
                     else
@@ -123,7 +121,7 @@ function MixtureCriterion:updateGradInput(input, target)
     batchSize = xTarget:size(1)
 
     local piStart = 1
-    local piEnd = self.sizeMixture
+    local piEnd = opt.numMixture
     local pi_t = input[{{},{piStart,piEnd}}]
 
     local muStart = piEnd + 1
@@ -134,7 +132,7 @@ function MixtureCriterion:updateGradInput(input, target)
     local sigmaEnd = muEnd + self.sizeCovarianceInput
     local sigma_t = input[{{},{sigmaStart,sigmaEnd}}]
     
-    if isCovarianceFull then
+    if opt.isCovarianceFull then
         
     else
         -- COMPUTE GAMMA
@@ -146,19 +144,19 @@ function MixtureCriterion:updateGradInput(input, target)
     
         -- expand to size of matrix gammaHat in order to compute gamma components
         -- for each entry
-        local sumGammaHatExpanded = sumGammaHat:expand(batchSize, self.sizeMixture)
+        local sumGammaHatExpanded = sumGammaHat:expand(batchSize, opt.numMixture)
     
         local gamma = torch.cmul(gammaHat, torch.pow(sumGammaHatExpanded, -1))
     
         -- TERMS FOR DERIVATIVES
-        local gammaResized = gamma:clone():resize(batchSize, self.sizeMixture, 1)
-        local gammaExpanded = gammaResized:expand(batchSize, self.sizeMixture, self.dimInput)
-        local sigmaTensor = sigma_t:clone():resize(batchSize, self.sizeMixture, self.dimInput)
+        local gammaResized = gamma:clone():resize(batchSize, opt.numMixture, 1)
+        local gammaExpanded = gammaResized:expand(batchSize, opt.numMixture, opt.inputSize)
+        local sigmaTensor = sigma_t:clone():resize(batchSize, opt.numMixture, opt.inputSize)
         sigmaTensor:add(1e-10)
         local sigmaTensorInverse = torch.pow(sigmaTensor, -1)
-        local muResized = mu_t:clone():resize(batchSize, self.sizeMixture, self.dimInput)
-        local xTargetResized = xTarget:clone():resize(batchSize, 1, self.dimInput)
-        local xTagetExpanded = xTargetResized:expand(batchSize, self.sizeMixture, self.dimInput)
+        local muResized = mu_t:clone():resize(batchSize, opt.numMixture, opt.inputSize)
+        local xTargetResized = xTarget:clone():resize(batchSize, 1, opt.inputSize)
+        local xTagetExpanded = xTargetResized:expand(batchSize, opt.numMixture, opt.inputSize)
         local xMinusMu = xTagetExpanded - muResized
     
         -- in order to perform inverse but with values on diagonal that might be zero
@@ -175,7 +173,7 @@ function MixtureCriterion:updateGradInput(input, target)
         -- COMPUTE dL(x)/d(mu_t_hat)
         local dl_mu_t_hat = torch.cmul(xMinusMu, sigmaTensorInverse)
         dl_mu_t_hat = torch.cmul(dl_mu_t_hat, gammaExpanded)
-        dl_mu_t_hat = torch.mul(dl_mu_t_hat, -1):resize(batchSize, self.sizeMixture * self.dimInput)
+        dl_mu_t_hat = torch.mul(dl_mu_t_hat, -1):resize(batchSize, opt.numMixture * opt.inputSize)
     
         -- COMPUTE dL(x)/d(sigma_t_hat)
         local dl_sigma_t_hat = torch.cmul(xMinusMu, sigmaTensorInverse)
@@ -183,7 +181,7 @@ function MixtureCriterion:updateGradInput(input, target)
         dl_sigma_t_hat = dl_sigma_t_hat - sigmaTensorInverse
         dl_sigma_t_hat = torch.mul(dl_sigma_t_hat, -0.5)
         dl_sigma_t_hat = torch.cmul(dl_sigma_t_hat, gammaExpanded)
-        dl_sigma_t_hat:resize(batchSize, self.sizeMixture * self.dimInput)
+        dl_sigma_t_hat:resize(batchSize, opt.numMixture * opt.inputSize)
     
         local grad_input = torch.cat(d_pi_t_hat:float(), dl_mu_t_hat:float())
         grad_input = torch.cat(grad_input, dl_sigma_t_hat:float())

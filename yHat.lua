@@ -2,24 +2,23 @@ require 'nn'
 
 local YHat, parent = torch.class('nn.YHat', 'nn.Module')
 
-function YHat:__init(dimInput, numMixture, isCovarianceFull)
+function YHat:__init()
    parent.__init(self)
-   self.sizeMixture = numMixture
-   self.sizeMeanInput = dimInput * numMixture
+   self.sizeMeanInput = opt.inputSize * opt.numMixture
 
-   -- if flag isCovarianceFull true then input represents fill covariance
-   if isCovarianceFull then
-        self.sizeCovarianceInput = (((dimInput)*(dimInput+1))/2) * numMixture
+   -- if flag opt.isCovarianceFull true then input represents fill covariance
+   if opt.isCovarianceFull then
+        self.sizeCovarianceInput = (((opt.inputSize)*(opt.inputSize+1))/2) * opt.numMixture
    
    -- otherwise the input represents the main axis of a diagonal covariance
    else
-        self.sizeCovarianceInput = dimInput * numMixture
+        self.sizeCovarianceInput = opt.inputSize * opt.numMixture
    end
 end
 
 function YHat:updateOutput(input)
     local piStart = 1
-    local piEnd = self.sizeMixture
+    local piEnd = opt.numMixture
     local hat_pi_t = input[{{},{piStart,piEnd}}]
 
     local muStart = piEnd + 1
@@ -46,7 +45,7 @@ end
 
 function YHat:updateGradInput(input, gradOutput)
     local piStart = 1
-    local piEnd = self.sizeMixture
+    local piEnd = opt.numMixture
     local hat_pi_t = input[{{},{piStart,piEnd}}]
 
     local muStart = piEnd + 1
