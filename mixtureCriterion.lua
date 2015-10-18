@@ -26,6 +26,9 @@ function MixtureCriterion:getMixMultVarGauss(sigma_t, mu_t, pi_t, xTarget, batch
     local xTagetExpanded = xTargetResized:expand(batchSize, opt.numMixture, opt.inputSize):cuda()
     local xMinusMu = xTagetExpanded - muResized
 
+    print("sigmadet")
+    print(sigmaDetermiant)
+
     print('xMinusMu')
     print(xMinusMu)
 
