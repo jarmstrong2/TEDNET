@@ -18,6 +18,8 @@ function MixtureCriterion:getMixMultVarGauss(sigma_t, mu_t, pi_t, xTarget, batch
     local muResized = mu_t:clone():resize(batchSize, opt.numMixture, opt.inputSize)
     local xTargetResized = xTarget:clone():resize(batchSize, 1, opt.inputSize)
     local xTagetExpanded = xTargetResized:expand(batchSize, opt.numMixture, opt.inputSize)
+    print(xTagetExpanded)
+    print(muResized)
     local xMinusMu = xTagetExpanded - muResized
 
     -- first term 1/sqrt(2pi*det(sigma))
