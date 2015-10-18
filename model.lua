@@ -46,11 +46,11 @@ local h2_h = nn.SelectTable(2)(h2)
 local h3 = LSTMHN.lstm(opt.inputSize, opt.hiddenSize)({input_xin, w_vector, h2_h, input_lstm_h3_c, input_lstm_h3_h})
 local h3_c = nn.SelectTable(1)(h3)
 local h3_h = nn.SelectTable(2)(h3)
-if opt.isCovarianceFull then
-else
+--if opt.isCovarianceFull then
+--else
 	local y = nn.YHat()(nn.Linear(opt.hiddenSize*3, (opt.numMixture + 2 * (opt.inputSize * opt.numMixture)))
 		(nn.JoinTable(2)({h1_h, h2_h, h3_h})))
-end
+--end
 
 model.rnn_core = nn.gModule({input_xin, input_context, input_prev_kappa, input_w_prev,  
                              input_lstm_h1_c, input_lstm_h1_h,
