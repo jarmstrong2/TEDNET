@@ -177,9 +177,9 @@ function feval(x)
             clones.criterion[t]:setmask(cmaskMat[{{},{},{t}}]:cuda())
             print(output_y[t])
             loss = clones.criterion[t]:forward(output_y[t], x_target:cuda()) + loss
-            print('inner loop ',loss)        
+            --print('inner loop ',loss)        
         end
-        print('current pass ',loss)        
+        --print('current pass ',loss)        
         elems = (elementCount - sampleSize) + elems
         
         -- BACKWARD
