@@ -13,12 +13,12 @@ function MixtureCriterion:getMixMultVarGauss(sigma_t, mu_t, pi_t, xTarget, batch
     sigmaTensor:add(1e-10)
 
     -- setting up terms for multivariate gaussian
-    local sigmaTensorInverse = torch.pow(sigmaTensor, -1):cuda()
+    local sigmaTensorInverse = torch.pow(sigmaTensor, -1)
     
-    local sigmaDetermiant = (torch.cumprod(sigmaTensor, 3)[{{},{},{opt.inputSize}}]):squeeze(3):cuda()
-    local muResized = mu_t:clone():resize(batchSize, opt.numMixture, opt.inputSize):cuda()
-    local xTargetResized = xTarget:clone():resize(batchSize, 1, opt.inputSize):cuda()
-    local xTagetExpanded = xTargetResized:expand(batchSize, opt.numMixture, opt.inputSize):cuda()
+    local sigmaDetermiant = (torch.cumprod(sigmaTensor, 3)[{{},{},{opt.inputSize}}]):squeeze(3)
+    local muResized = mu_t:clone():resize(batchSize, opt.numMixture, opt.inputSize)
+    local xTargetResized = xTarget:clone():resize(batchSize, 1, opt.inputSize)
+    local xTagetExpanded = xTargetResized:expand(batchSize, opt.numMixture, opt.inputSize)
     local xMinusMu = xTagetExpanded - muResized
 
     -- first term 1/sqrt(2pi*det(sigma))
@@ -28,14 +28,14 @@ function MixtureCriterion:getMixMultVarGauss(sigma_t, mu_t, pi_t, xTarget, batch
     local term2 = torch.cmul(sigmaTensorInverse, xMinusMu)
 
     -- third term exp(transpose(x - mu)*term2)
-    local term3 = torch.exp(torch.sum(torch.cmul(xMinusMu, term2):mul(-0.5), 3):squeeze(3):clamp(-(1/0),80))
-    --local term3 = torch.exp(torch.sum(torch.cmul(xMinusMu, term2):mul(-0.5), 3):squeeze(3))
+    --local term3 = torch.exp(torch.sum(torch.cmul(xMinusMu, term2):mul(-0.5), 3):squeeze(3):clamp(-(1/0),80))
+    local term3 = torch.exp(torch.sum(torch.cmul(xMinusMu, term2):mul(-0.5), 3):squeeze(3))
         
     -- fourth term term1*term3 element-wise mult
     local term4 = torch.cmul(term1, term3)
 
     -- fifth term pi*term4 element-wise mult
-    local term5 = torch.cmul(term4, pi_t:cuda())
+    local term5 = torch.cmul(term4, pi_t)
         
     return term5
 end
@@ -99,8 +99,8 @@ function MixtureCriterion:updateOutput(input, target)
     else
         -- get mixture multivariate gaussian distributions on target values
         -- multiplied by respective mixture components
-        local mixGauss = self:getMixMultVarGauss(sigma_t, mu_t, pi_t, xTarget, batchsize)
-        
+        local mixGauss = self:getMixMultVarGauss(sigma_t:double(), mu_t:double(), pi_t:double(), xTarget:double(), batchsize)
+ --	print(mixGauss)       
         local sumMixGauss = mixGauss:sum(2):squeeze(2)
 
         -- apply log to sum of mixture multivariate gaussian
@@ -109,30 +109,31 @@ function MixtureCriterion:updateOutput(input, target)
         -- the loss function result
         lossOutput = torch.mul(logSumGauss, -1) 
 
-        lossOutput = lossOutput:cmul(self.mask):sum()
+        lossOutput = lossOutput:cmul(self.mask:double()):sum()
 
         if self.sizeAverage then
             lossOutput = lossOutput/batchSize
         end
     end
+   -- print(lossOutput)
     return lossOutput
 end
 
 function MixtureCriterion:updateGradInput(input, target)
-    xTarget = target:clone()
+    xTarget = target:clone():double()
     batchSize = xTarget:size(1)
 
     local piStart = 1
     local piEnd = opt.numMixture
-    local pi_t = input[{{},{piStart,piEnd}}]
+    local pi_t = input[{{},{piStart,piEnd}}]:double()
 
     local muStart = piEnd + 1
     local muEnd = piEnd + self.sizeMeanInput
-    local mu_t = input[{{},{muStart,muEnd}}]
+    local mu_t = input[{{},{muStart,muEnd}}]:double()
 
     local sigmaStart = muEnd + 1
     local sigmaEnd = muEnd + self.sizeCovarianceInput
-    local sigma_t = input[{{},{sigmaStart,sigmaEnd}}]
+    local sigma_t = input[{{},{sigmaStart,sigmaEnd}}]:double()
     
     if opt.isCovarianceFull then
         
@@ -140,7 +141,7 @@ function MixtureCriterion:updateGradInput(input, target)
         -- COMPUTE GAMMA
         -- get mixture multivariate gaussian distributions on target values
         -- multiplied by respective mixture components
-        local gammaHat = self:getMixMultVarGauss(sigma_t, mu_t, pi_t, xTarget, batchsize)
+        local gammaHat = self:getMixMultVarGauss(sigma_t:double(), mu_t:double(), pi_t:double(), xTarget:double(), batchsize)
         
         local sumGammaHat = torch.sum(gammaHat, 2)
     
@@ -183,6 +184,8 @@ function MixtureCriterion:updateGradInput(input, target)
     
         local grad_input = torch.cat(d_pi_t_hat:float(), dl_mu_t_hat:float())
         grad_input = torch.cat(grad_input, dl_sigma_t_hat:float())
+--	print("gin")
+--	print(grad_input)
 
         self.gradInput = grad_input:cuda()
         self.gradInput:cmul(self.mask:reshape(self.mask:size(1),1):expand(self.gradInput:size()))
