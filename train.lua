@@ -214,6 +214,17 @@ function feval(x)
                   dlstm_c_h2, dlstm_h_h2, dlstm_c_h3, dlstm_h_h3}))
         end
     
+    	torch.typename(kappa_prev[t-1])
+    	torch.typename(w[t-1])
+    	torch.typename(lstm_c_h1[t-1])
+    	torch.typename(lstm_h_h1[t-1])
+    	torch.typename(lstm_c_h2[t-1])
+    	torch.typename(lstm_h_h2[t-1])
+    	torch.typename(lstm_c_h3[t-1])
+    	torch.typename(lstm_h_h3[t-1])
+
+    		
+    
         dh2_w = nil
         dh2_h1 = nil
         dh3_w = nil
