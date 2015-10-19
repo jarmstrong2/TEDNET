@@ -165,24 +165,20 @@ function MixtureCriterion:updateGradInput(input, target)
         -- for each entry
         local sumGammaHatExpanded = sumGammaHat:expand(batchSize, opt.numMixture)
     
-        local gamma = torch.cmul(gammaHat, torch.pow(sumGammaHatExpanded:add(1e-10), -1))
+        local gamma = torch.cmul(gammaHat, torch.pow(sumGammaHatExpanded + 1e-10, -1))
     
         -- TERMS FOR DERIVATIVES
         local gammaResized = gamma:clone():resize(batchSize, opt.numMixture, 1)
         local gammaExpanded = gammaResized:expand(batchSize, opt.numMixture, opt.inputSize)
         local sigmaTensor = sigma_t:clone():resize(batchSize, opt.numMixture, opt.inputSize)
-        sigmaTensor:add(1e-10)
-        local sigmaTensorInverse = torch.pow(sigmaTensor, -1)
+        local sigmaTensorInverse = torch.pow(sigmaTensor + 1e-10, -1)
         local muResized = mu_t:clone():resize(batchSize, opt.numMixture, opt.inputSize)
         local xTargetResized = xTarget:clone():resize(batchSize, 1, opt.inputSize)
         local xTagetExpanded = xTargetResized:expand(batchSize, opt.numMixture, opt.inputSize)
         local xMinusMu = xTagetExpanded - muResized
     
-        -- in order to perform inverse but with values on diagonal that might be zero
-        sigmaTensor:add(1e-10)
-
         -- setting up terms for multivariate gaussian
-        local sigmaTensorInverse = torch.pow(sigmaTensor, -1)
+        local sigmaTensorInverse = torch.pow(sigmaTensor + 1e-10, -1)
         
         -- COMPUTE dL(x)/d(pi_t_hat)
         --local d_pi_t_hat = torch.cmul(gamma, (torch.add(pi_t, -1)))
