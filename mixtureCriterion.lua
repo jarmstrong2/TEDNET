@@ -24,35 +24,17 @@ function MixtureCriterion:getMixMultVarGauss(sigma_t, mu_t, pi_t, xTarget, batch
     -- first term 1/sqrt(2pi*det(sigma))
     local term1 = (((sigmaDetermiant + 1e-10):sqrt()):pow(-1)) * ((2*math.pi)^(-opt.inputSize/2))
 
-print("term1")
-print(term1)
-
     -- second term inv(sigma)*(x - mu) element-wise mult
     local term2 = torch.cmul(sigmaTensorInverse, xMinusMu)
-
-print("term2")
-print(term2)
 
     -- third term exp(transpose(x - mu)*term2)
     local term3 = torch.exp(torch.sum(torch.cmul(xMinusMu, term2):mul(-0.5), 3):squeeze(3):clamp(-(1/0),80))
         
-print("term3sum")
-print(torch.sum(torch.cmul(xMinusMu, term2):mul(-0.5), 3))
-        
-print("term3")
-print(term3)
-        
     -- fourth term term1*term4 element-wise mult
     local term4 = torch.cmul(term1, term3)
 
-print("term4")
-print(term4)
-
     -- fifth term pi*term4 element-wise mult
     local term5 = torch.cmul(term4, pi_t:cuda())
-        
-print("term5")
-print(term5)
         
     return term5
 end
@@ -94,7 +76,6 @@ function MixtureCriterion:updateOutput(input, target)
     local sigmaStart = muEnd + 1
     local sigmaEnd = muEnd + self.sizeCovarianceInput
     local sigma_t = input[{{},{sigmaStart,sigmaEnd}}]
-    --sigma_t:clamp(-1,1)
 
     -- Produce a full covariance matrix from values in sigma_t
     if opt.isCovarianceFull then
@@ -119,25 +100,13 @@ function MixtureCriterion:updateOutput(input, target)
         -- multiplied by respective mixture components
         local mixGauss = self:getMixMultVarGauss(sigma_t, mu_t, pi_t, xTarget, batchsize)
         
-        print("mixG")
-        print(mixGauss)
-        
         local sumMixGauss = mixGauss:sum(2):squeeze(2)
-
-     print("sumMixGauss")
-        print(sumMixGauss)
 
         -- apply log to sum of mixture multivariate gaussian
         local logSumGauss = torch.log(sumMixGauss)
-
-    print("logSumGauss")
-        print(logSumGauss)
-
+        
         -- the loss function result
         lossOutput = torch.mul(logSumGauss, -1) 
-
-        print('losso')
-        print(lossOutput)
 
         lossOutput = lossOutput:cmul(self.mask):sum()
 
@@ -163,7 +132,6 @@ function MixtureCriterion:updateGradInput(input, target)
     local sigmaStart = muEnd + 1
     local sigmaEnd = muEnd + self.sizeCovarianceInput
     local sigma_t = input[{{},{sigmaStart,sigmaEnd}}]
-    --sigma_t:clamp(-1,1)
     
     if opt.isCovarianceFull then
         
