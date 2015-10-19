@@ -251,29 +251,4 @@ function feval(x)
     return loss, grad_params
 end
 
-losses = {} 
-vallosses = {}
-local optim_state = {learningRate = opt.lr, alpha = 0.95, epsilon = 1e-6}
-local iterations = 8000
-local minValLoss = 1/0
-for i = 1, iterations do
-    batchCount = i
-
-    local _, loss = optim.adam(feval, params, optim_state)
-
-    --print(string.format("update param, loss = %6.8f, gradnorm = %6.4e", loss[1], grad_params:clone():norm()))
-    if i % 20 == 0 then
-        --print(string.format("iteration %4d, loss = %6.8f, gradnorm = %6.4e", i, loss[1], grad_params:norm()))
-        valLoss = getValLoss()
-        vallosses[#vallosses + 1] = valLoss
-        --print(string.format("validation loss = %6.8f", valLoss))
-        if minValLoss > valLoss then
-            minValLoss = valLoss
-            torch.save("tednet.t7", model)
-            print("------- Model Saved --------")
-        end
-        losses[#losses + 1] = loss[1]
-        torch.save("losses.t7", losses)
-        torch.save("vallosses.t7", vallosses)
-    end
-end
+diff,dC,dC_est = optim.checkgrad(feval, params, 1e-4)
