@@ -252,3 +252,5 @@ function feval(x)
 end
 
 diff,dC,dC_est = optim.checkgrad(feval, params, 1e-4)
+
+print(diff)
