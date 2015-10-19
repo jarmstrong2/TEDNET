@@ -175,11 +175,12 @@ function feval(x)
        
             -- criterion 
             clones.criterion[t]:setmask(cmaskMat[{{},{},{t}}]:cuda())
-            print(output_y[t])
-            loss = clones.criterion[t]:forward(output_y[t], x_target:cuda()) + loss
-            --print('inner loop ',loss)        
+            --print(output_y[t])
+            --print(x_target)
+	    loss = clones.criterion[t]:forward(output_y[t], x_target:cuda()) + loss
+            print('inner loop ',loss)        
         end
-        --print('current pass ',loss)        
+        print('current pass ',loss)        
         elems = (elementCount - sampleSize) + elems
         
         -- BACKWARD
@@ -200,7 +201,9 @@ function feval(x)
             local x_target = inputMat[{{},{},{t+1}}]:squeeze()
             
             -- criterion
-            local grad_crit = clones.criterion[t]:backward(output_y[t], x_target:cuda())            
+            local grad_crit = clones.criterion[t]:backward(output_y[t]:cuda(), x_target:cuda())            
+
+		print(grad_crit)
 
             -- model
             _x, _c, dkappa, dh1_w, dlstm_c_h1, dlstm_h_h1,
@@ -208,7 +211,7 @@ function feval(x)
                  kappa_prev[t-1], w[t-1], lstm_c_h1[t-1], lstm_h_h1[t-1],
                  lstm_c_h2[t-1], lstm_h_h2[t-1], lstm_c_h3[t-1], lstm_h_h3[t-1]},
                  {grad_crit, dkappa, dh1_w, _, dlstm_c_h1, dlstm_h_h1, 
-                  dlstm_c_h2, dlstm_h_h2, dlstm_c_h3, dlstm_h_h3 }))
+                  dlstm_c_h2, dlstm_h_h2, dlstm_c_h3, dlstm_h_h3}))
         end
     
         dh2_w = nil
@@ -261,7 +264,7 @@ for i = 1, iterations do
 
     local _, loss = optim.adam(feval, params, optim_state)
 
-    --print(string.format("update param, loss = %6.8f, gradnorm = %6.4e", loss[1], grad_params:clone():norm()))
+    print(string.format("update param, loss = %6.8f, gradnorm = %6.4e", loss[1], grad_params:clone():norm()))
     if i % 20 == 0 then
         --print(string.format("iteration %4d, loss = %6.8f, gradnorm = %6.4e", i, loss[1], grad_params:norm()))
         valLoss = getValLoss()
