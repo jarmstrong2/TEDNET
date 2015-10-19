@@ -34,7 +34,7 @@ print("term2")
 print(term2)
 
     -- third term exp(transpose(x - mu)*term2)
-    local term3 = torch.exp(torch.sum(torch.cmul(xMinusMu, term2):mul(-0.5), 3):squeeze(3):clamp(-(1/0),80))
+    local term3 = torch.exp(torch.sum(torch.cmul(xMinusMu, term2):mul(-0.5), 3):squeeze(3):clamp(-(1/0),90))
         
 print("term3sum")
 print(torch.sum(torch.cmul(xMinusMu, term2):mul(-0.5), 3))
