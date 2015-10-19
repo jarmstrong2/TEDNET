@@ -123,6 +123,9 @@ function MixtureCriterion:updateOutput(input, target)
         -- the loss function result
         lossOutput = torch.mul(logSumGauss, -1) 
 
+        print('losso')
+        print(lossOutput)
+
         lossOutput = lossOutput:cmul(self.mask):sum()
 
         if self.sizeAverage then
