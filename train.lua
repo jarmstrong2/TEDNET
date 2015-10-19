@@ -203,8 +203,6 @@ function feval(x)
             -- criterion
             local grad_crit = clones.criterion[t]:backward(output_y[t]:cuda(), x_target:cuda())            
             	
-            	print(grad_crit)
-            	
             -- model
             _x, _c, dkappa, dh1_w, dlstm_c_h1, dlstm_h_h1,
             dlstm_c_h2, dlstm_h_h2, dlstm_c_h3, dlstm_h_h3 = unpack(clones.rnn_core[t]:backward({x_in:cuda(), cuMat:cuda(), 
@@ -213,11 +211,7 @@ function feval(x)
                  {grad_crit:cuda(), dkappa, dh1_w, _, dlstm_c_h1, dlstm_h_h1, 
                   dlstm_c_h2, dlstm_h_h2, dlstm_c_h3, dlstm_h_h3}))
         end
-    
 
-
-    		
-    
         dh2_w = nil
         dh2_h1 = nil
         dh3_w = nil
