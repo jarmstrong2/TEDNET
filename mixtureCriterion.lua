@@ -151,6 +151,7 @@ function MixtureCriterion:updateGradInput(input, target)
     local sigmaStart = muEnd + 1
     local sigmaEnd = muEnd + self.sizeCovarianceInput
     local sigma_t = input[{{},{sigmaStart,sigmaEnd}}]
+    sigma_t:clamp(-100,100)
     
     if opt.isCovarianceFull then
         
