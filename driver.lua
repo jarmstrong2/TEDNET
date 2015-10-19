@@ -8,7 +8,7 @@ cmd:option('-hiddenSize' , 400, 'number of hidden units in lstms')
 cmd:option('-lr' , 1e-4, 'learning rate')
 cmd:option('-maxlen' , 1000, 'max sequence length')
 cmd:option('-batchSize' , 4, 'mini batch size')
-cmd:option('-numPasses' , 8, 'number of passes')
+cmd:option('-numPasses' , 1, 'number of passes')
 cmd:option('-isCovarianceFull' , false, 'true if full covariance, o.w. diagonal covariance')
 cmd:option('-numMixture' , 20, 'number of mixture components in output layer') 
 
