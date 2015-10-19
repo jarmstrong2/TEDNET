@@ -178,9 +178,9 @@ function feval(x)
             --print(output_y[t])
             --print(x_target)
 	    loss = clones.criterion[t]:forward(output_y[t], x_target:cuda()) + loss
-            print('inner loop ',loss)        
+            --print('inner loop ',loss)        
         end
-        print('current pass ',loss)        
+        --print('current pass ',loss)        
         elems = (elementCount - sampleSize) + elems
         
         -- BACKWARD
@@ -264,10 +264,10 @@ for i = 1, iterations do
 
     print(string.format("update param, loss = %6.8f, gradnorm = %6.4e", loss[1], grad_params:clone():norm()))
     if i % 20 == 0 then
-        --print(string.format("iteration %4d, loss = %6.8f, gradnorm = %6.4e", i, loss[1], grad_params:norm()))
+        print(string.format("iteration %4d, loss = %6.8f, gradnorm = %6.4e", i, loss[1], grad_params:norm()))
         valLoss = getValLoss()
         vallosses[#vallosses + 1] = valLoss
-        --print(string.format("validation loss = %6.8f", valLoss))
+        print(string.format("validation loss = %6.8f", valLoss))
         if minValLoss > valLoss then
             minValLoss = valLoss
             torch.save("tednet.t7", model)
