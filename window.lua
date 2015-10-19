@@ -52,7 +52,6 @@ function Window:updateOutput(input)
 end
 
 function Window:updateGradInput(input, gradOutput)
-    print("here3")
     local input_h1, context, kappas_t_1, mask = unpack(input)
     local grad_output, d_kappas_t_plus_1 = unpack(gradOutput)
     
@@ -125,7 +124,6 @@ function Window:updateGradInput(input, gradOutput)
     local grad_context = context:clone():zero()
    
     self.gradInput = {grad_input:cuda(), grad_context, dl_dkappas}
-    print("here4")
     return self.gradInput
     
 end
