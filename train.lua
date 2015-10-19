@@ -1,13 +1,13 @@
 require 'getbatch'
 
 -- get training dataset
-STRAIGHTdata = torch.load('toy.t7')
+STRAIGHTdata = torch.load('/home/jarmstrong/TEDNET/toy.t7')
 dataSize = #STRAIGHTdata
 
 print('uploaded training data')
 
 -- get validation dataset
-valSTRAIGHTdata = torch.load('toy.t7')
+valSTRAIGHTdata = torch.load('/home/jarmstrong/TEDNET/toy.t7')
 valdataSize = #valSTRAIGHTdata
 
 print('uploaded validation data')
