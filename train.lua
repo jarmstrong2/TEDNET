@@ -203,8 +203,15 @@ function feval(x)
             -- criterion
             local grad_crit = clones.criterion[t]:backward(output_y[t]:cuda(), x_target:cuda())            
 
-		print(grad_crit)
-
+		--print(grad_crit)
+    	print(torch.typename(kappa_prev[t-1]))
+    	print(torch.typename(w[t-1]))
+    	print(torch.typename(lstm_c_h1[t-1]))
+    	print(torch.typename(lstm_h_h1[t-1]))
+    	print(torch.typename(lstm_c_h2[t-1]))
+    	print(torch.typename(lstm_h_h2[t-1]))
+    	print(torch.typename(lstm_c_h3[t-1]))
+    	print(torch.typename(lstm_h_h3[t-1]))
             -- model
             _x, _c, dkappa, dh1_w, dlstm_c_h1, dlstm_h_h1,
             dlstm_c_h2, dlstm_h_h2, dlstm_c_h3, dlstm_h_h3 = unpack(clones.rnn_core[t]:backward({x_in:cuda(), cuMat:cuda(), 
@@ -214,14 +221,7 @@ function feval(x)
                   dlstm_c_h2, dlstm_h_h2, dlstm_c_h3, dlstm_h_h3}))
         end
     
-    	print(torch.typename(kappa_prev[t-1]))
-    	print(torch.typename(w[t-1]))
-    	print(torch.typename(lstm_c_h1[t-1]))
-    	print(torch.typename(lstm_h_h1[t-1]))
-    	print(torch.typename(lstm_c_h2[t-1]))
-    	print(torch.typename(lstm_h_h2[t-1]))
-    	print(torch.typename(lstm_c_h3[t-1]))
-    	print(torch.typename(lstm_h_h3[t-1]))
+
 
     		
     
