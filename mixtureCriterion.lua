@@ -94,7 +94,7 @@ function MixtureCriterion:updateOutput(input, target)
     local sigmaStart = muEnd + 1
     local sigmaEnd = muEnd + self.sizeCovarianceInput
     local sigma_t = input[{{},{sigmaStart,sigmaEnd}}]
-    sigma_t:clamp(-1,1)
+    --sigma_t:clamp(-1,1)
 
     -- Produce a full covariance matrix from values in sigma_t
     if opt.isCovarianceFull then
@@ -163,7 +163,7 @@ function MixtureCriterion:updateGradInput(input, target)
     local sigmaStart = muEnd + 1
     local sigmaEnd = muEnd + self.sizeCovarianceInput
     local sigma_t = input[{{},{sigmaStart,sigmaEnd}}]
-    sigma_t:clamp(-1,1)
+    --sigma_t:clamp(-1,1)
     
     if opt.isCovarianceFull then
         
