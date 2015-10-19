@@ -14,7 +14,7 @@ print('uploaded validation data')
 
 print('start training')
 
-params:uniform(-0.008, 0.008)
+params:uniform(-0.08, 0.08)
 sampleSize = opt.batchSize
 numberOfPasses = opt.numPasses
 

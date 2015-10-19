@@ -36,7 +36,9 @@ function MixtureCriterion:getMixMultVarGauss(sigma_t, mu_t, pi_t, xTarget, batch
 
     -- fifth term pi*term4 element-wise mult
     local term5 = torch.cmul(term4, pi_t)
-        
+     
+	--print(term5)
+   
     return term5
 end
 

@@ -33,7 +33,7 @@ function YHat:updateOutput(input)
    
     local pi_t = self.pi_t_act:forward(hat_pi_t)
     local mu_t = hat_mu_t:clone()
-    local sigma_t = hat_sigma_t:clone()*100
+    local sigma_t = hat_sigma_t:clone() * 1
     
     local output = torch.cat(pi_t:float(), mu_t:float(), 2)
     output = torch.cat(output, sigma_t:float(), 2)
@@ -62,7 +62,7 @@ function YHat:updateGradInput(input, gradOutput)
 
     local grad_hat_pi_t = d_hat_pi_t:clone()
     local grad_hat_mu_t = d_hat_mu_t:clone()
-    local grad_hat_sigma_t = d_hat_sigma_t:clone()*100
+    local grad_hat_sigma_t = d_hat_sigma_t:clone() * 1
         
     local grad_input = torch.cat(grad_hat_pi_t:float(), grad_hat_mu_t:float(), 2)
     grad_input = torch.cat(grad_input, grad_hat_sigma_t:float(), 2)
