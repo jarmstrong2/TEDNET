@@ -67,7 +67,7 @@ function YHat:updateGradInput(input, gradOutput)
     local grad_input = torch.cat(grad_hat_pi_t:float(), grad_hat_mu_t:float(), 2)
     grad_input = torch.cat(grad_input, grad_hat_sigma_t:float(), 2)
     
-    self.gradInput = grad_input
-    
+    self.gradInput = grad_input:cuda() 
+
     return self.gradInput  
 end

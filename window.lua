@@ -124,7 +124,6 @@ function Window:updateGradInput(input, gradOutput)
     local grad_context = context:clone():zero()
    
     self.gradInput = {grad_input:cuda(), grad_context, dl_dkappas}
-    
     return self.gradInput
     
 end

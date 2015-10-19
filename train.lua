@@ -1,20 +1,20 @@
 require 'getbatch'
 
 -- get training dataset
-STRAIGHTdata = torch.load('toy.t7')
+STRAIGHTdata = torch.load('/home/jarmstrong/TEDNET/toy.t7')
 dataSize = #STRAIGHTdata
 
 print('uploaded training data')
 
 -- get validation dataset
-valSTRAIGHTdata = torch.load('toy.t7')
+valSTRAIGHTdata = torch.load('/home/jarmstrong/TEDNET/toy.t7')
 valdataSize = #valSTRAIGHTdata
 
 print('uploaded validation data')
 
 print('start training')
 
-params:uniform(-0.08, 0.08)
+params:uniform(-0.008, 0.008)
 sampleSize = opt.batchSize
 numberOfPasses = opt.numPasses
 
@@ -175,8 +175,9 @@ function feval(x)
        
             -- criterion 
             clones.criterion[t]:setmask(cmaskMat[{{},{},{t}}]:cuda())
-            print(output_y[t])
-            loss = clones.criterion[t]:forward(output_y[t], x_target:cuda()) + loss
+            --print(output_y[t])
+            --print(x_target)
+	    loss = clones.criterion[t]:forward(output_y[t], x_target:cuda()) + loss
             --print('inner loop ',loss)        
         end
         --print('current pass ',loss)        
@@ -200,17 +201,17 @@ function feval(x)
             local x_target = inputMat[{{},{},{t+1}}]:squeeze()
             
             -- criterion
-            local grad_crit = clones.criterion[t]:backward(output_y[t], x_target:cuda())            
-
+            local grad_crit = clones.criterion[t]:backward(output_y[t]:cuda(), x_target:cuda())            
+            	
             -- model
             _x, _c, dkappa, dh1_w, dlstm_c_h1, dlstm_h_h1,
             dlstm_c_h2, dlstm_h_h2, dlstm_c_h3, dlstm_h_h3 = unpack(clones.rnn_core[t]:backward({x_in:cuda(), cuMat:cuda(), 
                  kappa_prev[t-1], w[t-1], lstm_c_h1[t-1], lstm_h_h1[t-1],
                  lstm_c_h2[t-1], lstm_h_h2[t-1], lstm_c_h3[t-1], lstm_h_h3[t-1]},
-                 {grad_crit, dkappa, dh1_w, _, dlstm_c_h1, dlstm_h_h1, 
-                  dlstm_c_h2, dlstm_h_h2, dlstm_c_h3, dlstm_h_h3 }))
+                 {grad_crit:cuda(), dkappa, dh1_w, _, dlstm_c_h1, dlstm_h_h1, 
+                  dlstm_c_h2, dlstm_h_h2, dlstm_c_h3, dlstm_h_h3}))
         end
-    
+
         dh2_w = nil
         dh2_h1 = nil
         dh3_w = nil
@@ -261,19 +262,19 @@ for i = 1, iterations do
 
     local _, loss = optim.adam(feval, params, optim_state)
 
-    --print(string.format("update param, loss = %6.8f, gradnorm = %6.4e", loss[1], grad_params:clone():norm()))
+    print(string.format("update param, loss = %6.8f, gradnorm = %6.4e", loss[1], grad_params:clone():norm()))
     if i % 20 == 0 then
-        --print(string.format("iteration %4d, loss = %6.8f, gradnorm = %6.4e", i, loss[1], grad_params:norm()))
+        print(string.format("iteration %4d, loss = %6.8f, gradnorm = %6.4e", i, loss[1], grad_params:norm()))
         valLoss = getValLoss()
         vallosses[#vallosses + 1] = valLoss
-        --print(string.format("validation loss = %6.8f", valLoss))
+        print(string.format("validation loss = %6.8f", valLoss))
         if minValLoss > valLoss then
             minValLoss = valLoss
-            torch.save("tednet.t7", model)
+            torch.save("tednet2.t7", model)
             print("------- Model Saved --------")
         end
         losses[#losses + 1] = loss[1]
-        torch.save("losses.t7", losses)
-        torch.save("vallosses.t7", vallosses)
+        torch.save("losses2.t7", losses)
+        torch.save("vallosses2.t7", vallosses)
     end
 end

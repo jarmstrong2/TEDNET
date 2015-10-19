@@ -14,6 +14,7 @@ function MixtureCriterion:getMixMultVarGauss(sigma_t, mu_t, pi_t, xTarget, batch
 
     -- setting up terms for multivariate gaussian
     local sigmaTensorInverse = torch.pow(sigmaTensor, -1):cuda()
+    
     local sigmaDetermiant = (torch.cumprod(sigmaTensor, 3)[{{},{},{opt.inputSize}}]):squeeze(3):cuda()
     local muResized = mu_t:clone():resize(batchSize, opt.numMixture, opt.inputSize):cuda()
     local xTargetResized = xTarget:clone():resize(batchSize, 1, opt.inputSize):cuda()
@@ -21,20 +22,21 @@ function MixtureCriterion:getMixMultVarGauss(sigma_t, mu_t, pi_t, xTarget, batch
     local xMinusMu = xTagetExpanded - muResized
 
     -- first term 1/sqrt(2pi*det(sigma))
-    local term1 = torch.mul(sigmaDetermiant, (2*math.pi)^opt.inputSize):sqrt():pow(-1)
+    local term1 = (((sigmaDetermiant + 1e-10):sqrt()):pow(-1)) * ((2*math.pi)^(-opt.inputSize/2))
 
     -- second term inv(sigma)*(x - mu) element-wise mult
     local term2 = torch.cmul(sigmaTensorInverse, xMinusMu)
 
     -- third term exp(transpose(x - mu)*term2)
-    local term3 = torch.exp(torch.sum(torch.cmul(xMinusMu, term2):mul(-0.5), 3):squeeze(3))
-
-    -- fourth term term1*term4 element-wise mult
+    local term3 = torch.exp(torch.sum(torch.cmul(xMinusMu, term2):mul(-0.5), 3):squeeze(3):clamp(-(1/0),80))
+    --local term3 = torch.exp(torch.sum(torch.cmul(xMinusMu, term2):mul(-0.5), 3):squeeze(3))
+        
+    -- fourth term term1*term3 element-wise mult
     local term4 = torch.cmul(term1, term3)
 
     -- fifth term pi*term4 element-wise mult
     local term5 = torch.cmul(term4, pi_t:cuda())
-    
+        
     return term5
 end
 
@@ -103,11 +105,11 @@ function MixtureCriterion:updateOutput(input, target)
 
         -- apply log to sum of mixture multivariate gaussian
         local logSumGauss = torch.log(sumMixGauss)
-
+        
         -- the loss function result
         lossOutput = torch.mul(logSumGauss, -1) 
 
-        lossOutput:cmul(self.mask):sum()
+        lossOutput = lossOutput:cmul(self.mask):sum()
 
         if self.sizeAverage then
             lossOutput = lossOutput/batchSize
@@ -146,24 +148,20 @@ function MixtureCriterion:updateGradInput(input, target)
         -- for each entry
         local sumGammaHatExpanded = sumGammaHat:expand(batchSize, opt.numMixture)
     
-        local gamma = torch.cmul(gammaHat, torch.pow(sumGammaHatExpanded, -1))
+        local gamma = torch.cmul(gammaHat, torch.pow(sumGammaHatExpanded + 1e-10, -1))
     
         -- TERMS FOR DERIVATIVES
         local gammaResized = gamma:clone():resize(batchSize, opt.numMixture, 1)
         local gammaExpanded = gammaResized:expand(batchSize, opt.numMixture, opt.inputSize)
         local sigmaTensor = sigma_t:clone():resize(batchSize, opt.numMixture, opt.inputSize)
-        sigmaTensor:add(1e-10)
-        local sigmaTensorInverse = torch.pow(sigmaTensor, -1)
+        local sigmaTensorInverse = torch.pow(sigmaTensor + 1e-10, -1)
         local muResized = mu_t:clone():resize(batchSize, opt.numMixture, opt.inputSize)
         local xTargetResized = xTarget:clone():resize(batchSize, 1, opt.inputSize)
         local xTagetExpanded = xTargetResized:expand(batchSize, opt.numMixture, opt.inputSize)
         local xMinusMu = xTagetExpanded - muResized
     
-        -- in order to perform inverse but with values on diagonal that might be zero
-        sigmaTensor:add(1e-10)
-
         -- setting up terms for multivariate gaussian
-        local sigmaTensorInverse = torch.pow(sigmaTensor, -1)
+        local sigmaTensorInverse = torch.pow(sigmaTensor + 1e-10, -1)
         
         -- COMPUTE dL(x)/d(pi_t_hat)
         --local d_pi_t_hat = torch.cmul(gamma, (torch.add(pi_t, -1)))
@@ -186,7 +184,6 @@ function MixtureCriterion:updateGradInput(input, target)
         local grad_input = torch.cat(d_pi_t_hat:float(), dl_mu_t_hat:float())
         grad_input = torch.cat(grad_input, dl_sigma_t_hat:float())
 
-        -- TODO add back in cuda
         self.gradInput = grad_input:cuda()
         self.gradInput:cmul(self.mask:reshape(self.mask:size(1),1):expand(self.gradInput:size()))
     
