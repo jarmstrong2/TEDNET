@@ -31,7 +31,7 @@ function MixtureCriterion:getMixMultVarGauss(sigma_t, mu_t, pi_t, xTarget, batch
     local term3 = torch.exp(torch.sum(torch.cmul(xMinusMu, term2):mul(-0.5), 3):squeeze(3):clamp(-(1/0),80))
     --local term3 = torch.exp(torch.sum(torch.cmul(xMinusMu, term2):mul(-0.5), 3):squeeze(3))
         
-    -- fourth term term1*term4 element-wise mult
+    -- fourth term term1*term3 element-wise mult
     local term4 = torch.cmul(term1, term3)
 
     -- fifth term pi*term4 element-wise mult
