@@ -28,8 +28,8 @@ function MixtureCriterion:getMixMultVarGauss(sigma_t, mu_t, pi_t, xTarget, batch
     local term2 = torch.cmul(sigmaTensorInverse, xMinusMu)
 
     -- third term exp(transpose(x - mu)*term2)
-    --local term3 = torch.exp(torch.sum(torch.cmul(xMinusMu, term2):mul(-0.5), 3):squeeze(3):clamp(-(1/0),80))
-    local term3 = torch.exp(torch.sum(torch.cmul(xMinusMu, term2):mul(-0.5), 3):squeeze(3))
+    local term3 = torch.exp(torch.sum(torch.cmul(xMinusMu, term2):mul(-0.5), 3):squeeze(3):clamp(-(1/0),80))
+    --local term3 = torch.exp(torch.sum(torch.cmul(xMinusMu, term2):mul(-0.5), 3):squeeze(3))
         
     -- fourth term term1*term4 element-wise mult
     local term4 = torch.cmul(term1, term3)
@@ -184,7 +184,6 @@ function MixtureCriterion:updateGradInput(input, target)
         local grad_input = torch.cat(d_pi_t_hat:float(), dl_mu_t_hat:float())
         grad_input = torch.cat(grad_input, dl_sigma_t_hat:float())
 
-        -- TODO add back in cuda
         self.gradInput = grad_input:cuda()
         self.gradInput:cmul(self.mask:reshape(self.mask:size(1),1):expand(self.gradInput:size()))
     
