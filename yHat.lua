@@ -44,7 +44,6 @@ function YHat:updateOutput(input)
 end
 
 function YHat:updateGradInput(input, gradOutput)
-   print("here")
     local piStart = 1
     local piEnd = opt.numMixture
     local hat_pi_t = input[{{},{piStart,piEnd}}]
@@ -68,7 +67,7 @@ function YHat:updateGradInput(input, gradOutput)
     local grad_input = torch.cat(grad_hat_pi_t:float(), grad_hat_mu_t:float(), 2)
     grad_input = torch.cat(grad_input, grad_hat_sigma_t:float(), 2)
     
-    self.gradInput = grad_input
-    print("here2")
+    self.gradInput = grad_input:cuda()
+
     return self.gradInput  
 end
