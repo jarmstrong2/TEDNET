@@ -10,7 +10,7 @@ cmd:option('-maxlen' , 1000, 'max sequence length')
 cmd:option('-batchSize' , 4, 'mini batch size')
 cmd:option('-numPasses' , 8, 'number of passes')
 cmd:option('-isCovarianceFull' , false, 'true if full covariance, o.w. diagonal covariance')
-cmd:option('-numMixture' , 20, 'number of mixture components in output layer')
+cmd:option('-numMixture' , 20, 'number of mixture components in output layer') 
 
 cmd:text()
 opt = cmd:parse(arg)
