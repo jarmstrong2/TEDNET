@@ -116,10 +116,19 @@ function MixtureCriterion:updateOutput(input, target)
         -- multiplied by respective mixture components
         local mixGauss = self:getMixMultVarGauss(sigma_t, mu_t, pi_t, xTarget, batchsize)
         
+        print("mixG")
+        print(mixGauss)
+        
         local sumMixGauss = mixGauss:sum(2):squeeze(2)
+
+     print("sumMixGauss")
+        print(sumMixGauss)
 
         -- apply log to sum of mixture multivariate gaussian
         local logSumGauss = torch.log(sumMixGauss)
+
+    print("logSumGauss")
+        print(logSumGauss)
 
         -- the loss function result
         lossOutput = torch.mul(logSumGauss, -1) 
