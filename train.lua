@@ -270,11 +270,11 @@ for i = 1, iterations do
         print(string.format("validation loss = %6.8f", valLoss))
         if minValLoss > valLoss then
             minValLoss = valLoss
-            torch.save("tednet.t7", model)
+            torch.save("tednet2.t7", model)
             print("------- Model Saved --------")
         end
         losses[#losses + 1] = loss[1]
-        torch.save("losses.t7", losses)
-        torch.save("vallosses.t7", vallosses)
+        torch.save("losses2.t7", losses)
+        torch.save("vallosses2.t7", vallosses)
     end
 end
