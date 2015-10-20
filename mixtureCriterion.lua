@@ -1,5 +1,5 @@
 require 'nn'
-require 'cunn'
+require 'cunn' 
 
 local MixtureCriterion, parent = torch.class('nn.MixtureCriterion', 'nn.Criterion')
 
