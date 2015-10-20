@@ -112,7 +112,7 @@ function MixtureCriterion:updateOutput(input, target)
         -- the loss function result
         lossOutput = torch.mul(logSumGauss, -1) 
 
-        lossOutput = lossOutput:cmul(self.mask:double()):sum()
+        lossOutput = lossOutput:cmul(self.mask):sum()
 
         if self.sizeAverage then
             lossOutput = lossOutput/batchSize
@@ -123,7 +123,7 @@ function MixtureCriterion:updateOutput(input, target)
 end
 
 function MixtureCriterion:updateGradInput(input, target)
-    xTarget = target:clone():double()
+    xTarget = target:clone()
     batchSize = xTarget:size(1)
 
     local piStart = 1
