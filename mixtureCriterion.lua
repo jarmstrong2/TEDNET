@@ -101,7 +101,8 @@ function MixtureCriterion:updateOutput(input, target)
     else
         -- get mixture multivariate gaussian distributions on target values
         -- multiplied by respective mixture components
-        local mixGauss = self:getMixMultVarGauss(sigma_t:double(), mu_t:double(), pi_t:double(), xTarget:double(), batchsize)
+        --local mixGauss = self:getMixMultVarGauss(sigma_t:double(), mu_t:double(), pi_t:double(), xTarget:double(), batchsize)
+        local mixGauss = self:getMixMultVarGauss(sigma_t, mu_t, pi_t, xTarget, batchsize)
  --	print(mixGauss)       
         local sumMixGauss = mixGauss:sum(2):squeeze(2)
 
@@ -127,15 +128,15 @@ function MixtureCriterion:updateGradInput(input, target)
 
     local piStart = 1
     local piEnd = opt.numMixture
-    local pi_t = input[{{},{piStart,piEnd}}]:double()
+    local pi_t = input[{{},{piStart,piEnd}}]
 
     local muStart = piEnd + 1
     local muEnd = piEnd + self.sizeMeanInput
-    local mu_t = input[{{},{muStart,muEnd}}]:double()
+    local mu_t = input[{{},{muStart,muEnd}}]
 
     local sigmaStart = muEnd + 1
     local sigmaEnd = muEnd + self.sizeCovarianceInput
-    local sigma_t = input[{{},{sigmaStart,sigmaEnd}}]:double()
+    local sigma_t = input[{{},{sigmaStart,sigmaEnd}}]
     
     if opt.isCovarianceFull then
         
@@ -143,7 +144,8 @@ function MixtureCriterion:updateGradInput(input, target)
         -- COMPUTE GAMMA
         -- get mixture multivariate gaussian distributions on target values
         -- multiplied by respective mixture components
-        local gammaHat = self:getMixMultVarGauss(sigma_t:double(), mu_t:double(), pi_t:double(), xTarget:double(), batchsize)
+        --local gammaHat = self:getMixMultVarGauss(sigma_t:double(), mu_t:double(), pi_t:double(), xTarget:double(), batchsize)
+        local gammaHat = self:getMixMultVarGauss(sigma_t, mu_t, pi_t, xTarget, batchsize)
         
         local sumGammaHat = torch.sum(gammaHat, 2)
     
