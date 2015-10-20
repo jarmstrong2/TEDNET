@@ -22,7 +22,7 @@ function MixtureCriterion:getMixMultVarGauss(sigma_t, mu_t, pi_t, xTarget, batch
     local xMinusMu = xTagetExpanded - muResized
 
     -- first term 1/sqrt(2pi*det(sigma))
-    local term1 = (((sigmaDetermiant * ((2*math.pi)^(-opt.inputSize)) + 1e-10):sqrt()):pow(-1)) --* ((2*math.pi)^(-opt.inputSize/2))
+    local term1 = (((sigmaDetermiant * ((2*math.pi)^(opt.inputSize)) + 1e-10):sqrt()):pow(-1)) --* ((2*math.pi)^(-opt.inputSize/2))
 
     -- second term inv(sigma)*(x - mu) element-wise mult
     local term2 = torch.cmul(sigmaTensorInverse, xMinusMu)
