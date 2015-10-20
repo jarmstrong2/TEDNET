@@ -22,7 +22,7 @@ function MixtureCriterion:getMixMultVarGauss(sigma_t, mu_t, pi_t, xTarget, batch
     local xMinusMu = xTagetExpanded - muResized
 
     -- first term 1/sqrt(2pi*det(sigma))
-    local term1 = (((sigmaDetermiant * ((2*math.pi)^(opt.inputSize)) + 1e-10):sqrt()):pow(-1)) --* ((2*math.pi)^(-opt.inputSize/2))
+    local term1 = ((torch.mul(sigmaDetermiant, (2*math.pi)^(opt.inputSize)):sqrt()):pow(-1)) --* ((2*math.pi)^(-opt.inputSize/2))
 
     -- second term inv(sigma)*(x - mu) element-wise mult
     local term2 = torch.cmul(sigmaTensorInverse, xMinusMu)
@@ -157,14 +157,14 @@ function MixtureCriterion:updateGradInput(input, target)
         local gammaResized = gamma:clone():resize(batchSize, opt.numMixture, 1)
         local gammaExpanded = gammaResized:expand(batchSize, opt.numMixture, opt.inputSize)
         local sigmaTensor = sigma_t:clone():resize(batchSize, opt.numMixture, opt.inputSize)
-        local sigmaTensorInverse = torch.pow(sigmaTensor + 1e-10, -1)
+        local sigmaTensorInverse = torch.pow(sigmaTensor, -1)
         local muResized = mu_t:clone():resize(batchSize, opt.numMixture, opt.inputSize)
         local xTargetResized = xTarget:clone():resize(batchSize, 1, opt.inputSize)
         local xTagetExpanded = xTargetResized:expand(batchSize, opt.numMixture, opt.inputSize)
         local xMinusMu = xTagetExpanded - muResized
     
         -- setting up terms for multivariate gaussian
-        local sigmaTensorInverse = torch.pow(sigmaTensor + 1e-10, -1)
+        local sigmaTensorInverse = torch.pow(sigmaTensor, -1)
         
         -- COMPUTE dL(x)/d(pi_t_hat)
         --local d_pi_t_hat = torch.cmul(gamma, (torch.add(pi_t, -1)))
