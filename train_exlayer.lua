@@ -1,20 +1,20 @@
 require 'getbatch'
 
 -- get training dataset
-STRAIGHTdata = torch.load('/home/jarmstrong/TEDNET/toy.t7')
+STRAIGHTdata = torch.load('/home/jarmstrong/TEDNET/toy_600.t7')
 dataSize = #STRAIGHTdata
 
 print('uploaded training data')
 
 -- get validation dataset
-valSTRAIGHTdata = torch.load('/home/jarmstrong/TEDNET/toy.t7')
+valSTRAIGHTdata = torch.load('/home/jarmstrong/TEDNET/toy_600.t7')
 valdataSize = #valSTRAIGHTdata
 
 print('uploaded validation data')
 
 print('start training')
 
-params:uniform(-0.08, 0.08)
+params:uniform(-0.008, 0.008)
 sampleSize = opt.batchSize
 numberOfPasses = opt.numPasses
 
@@ -90,8 +90,8 @@ function getValLoss()
         -- forward
         
         for t = 1, maxLen - 1 do
-            local x_in = inputMat[{{},{},{t}}]:squeeze(3)
-            local x_target = inputMat[{{},{},{t+1}}]:squeeze(3)
+            local x_in = inputMat[{{},{1,opt.inputSize},{t}}]:squeeze(3)
+            local x_target = inputMat[{{},{1,opt.inputSize},{t+1}}]:squeeze(3)
 
             -- model 
             output_y[t], kappa_prev[t], w[t], _, lstm_c_h1[t], lstm_h_h1[t],
@@ -145,6 +145,10 @@ function feval(x)
         = getBatch(count, STRAIGHTdata, sampleSize)
         ------------------------------------------------------------
 
+if count > 100 then
+count = 1
+end
+
         if maxLen > MAXLEN then
             maxLen = MAXLEN
         end
@@ -171,8 +175,8 @@ function feval(x)
         -- FORWARD
         
         for t = 1, maxLen - 1 do
-            local x_in = inputMat[{{},{},{t}}]:squeeze(3)
-            local x_target = inputMat[{{},{},{t+1}}]:squeeze(3)
+            local x_in = inputMat[{{},{1,opt.inputSize},{t}}]:squeeze(3)
+            local x_target = inputMat[{{},{1,opt.inputSize},{t+1}}]:squeeze(3)
 
             -- model 
             output_y[t], kappa_prev[t], w[t], _, lstm_c_h1[t], lstm_h_h1[t],
@@ -207,8 +211,8 @@ function feval(x)
         
         for t = maxLen - 1, 1, -1 do
         
-            local x_in = inputMat[{{},{},{t}}]:squeeze()
-            local x_target = inputMat[{{},{},{t+1}}]:squeeze()
+            local x_in = inputMat[{{},{1,opt.inputSize},{t}}]:squeeze()
+            local x_target = inputMat[{{},{1,opt.inputSize},{t+1}}]:squeeze()
             
             -- criterion
             local grad_crit = clones.criterion[t]:backward(output_y[t]:cuda(), x_target:cuda())            
@@ -264,8 +268,8 @@ end
 
 losses = {} 
 vallosses = {}
-local optim_state = {learningRate = opt.lr, alpha = 0.95, epsilon = 1e-6}
-local iterations = 8000
+local optim_state = {learningRate = opt.lr, alpha = 0.95, epsilon = 1e-5}
+local iterations = 800000
 local minValLoss = 1/0
 for i = 1, iterations do
     batchCount = i
