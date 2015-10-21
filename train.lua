@@ -84,8 +84,8 @@ function getValLoss()
         -- forward
         
         for t = 1, maxLen - 1 do
-            local x_in = inputMat[{{},{},{t}}]:squeeze(3)
-            local x_target = inputMat[{{},{},{t+1}}]:squeeze(3)
+            local x_in = inputMat[{{},{1,opt.inputSize},{t}}]:squeeze(3)
+            local x_target = inputMat[{{},{1,opt.inputSize},{t+1}}]:squeeze(3)
 
             -- model 
             output_y[t], kappa_prev[t], w[t], _, lstm_c_h1[t], lstm_h_h1[t],
@@ -163,8 +163,8 @@ function feval(x)
         -- FORWARD
         
         for t = 1, maxLen - 1 do
-            local x_in = inputMat[{{},{},{t}}]:squeeze(3)
-            local x_target = inputMat[{{},{},{t+1}}]:squeeze(3)
+            local x_in = inputMat[{{},{1,opt.inputSize},{t}}]:squeeze(3)
+            local x_target = inputMat[{{},{1,opt.inputSize},{t+1}}]:squeeze(3)
 
             -- model 
             output_y[t], kappa_prev[t], w[t], _, lstm_c_h1[t], lstm_h_h1[t],
@@ -197,8 +197,8 @@ function feval(x)
         
         for t = maxLen - 1, 1, -1 do
         
-            local x_in = inputMat[{{},{},{t}}]:squeeze()
-            local x_target = inputMat[{{},{},{t+1}}]:squeeze()
+            local x_in = inputMat[{{},{1,opt.inputSize},{t}}]:squeeze(3)
+            local x_target = inputMat[{{},{1,opt.inputSize},{t+1}}]:squeeze(3)
             
             -- criterion
             local grad_crit = clones.criterion[t]:backward(output_y[t]:cuda(), x_target:cuda())            
