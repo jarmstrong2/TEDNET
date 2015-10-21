@@ -44,12 +44,12 @@ end
 
 function getInputAndMaskMat(maxLen, newLen, remainingLen, count, data)
     sampleCount = 1
-    inputMat = torch.zeros(sample_size, 61, maxLen)
+    inputMat = torch.zeros(sample_size, opt.inputSize, maxLen)
     cmaskMat = torch.zeros(sample_size, 1, maxLen)
     elementCount = 0
     for i = count, remainingLen do
         for j = 1, (#(data[i].mat))[1] do
-            inputMat[{{sampleCount}, {}, {j}}] = data[i].mat[j]
+            inputMat[{{sampleCount}, {}, {j}}] = (data[i].mat[{{j},{1,opt.inputSize}}])
             cmaskMat[{{sampleCount}, {}, {j}}]:fill(1)
             if j <= 1000 then
                 elementCount = elementCount + 1
@@ -59,7 +59,7 @@ function getInputAndMaskMat(maxLen, newLen, remainingLen, count, data)
     end
     for i = 1, newLen do
         for j = 1, (#(data[i].mat))[1] do
-            inputMat[{{sampleCount}, {}, {j}}] = data[i].mat[j]
+            inputMat[{{sampleCount}, {}, {j}}] = (data[i].mat[{{j},{1,opt.inputSize}}])
             cmaskMat[{{sampleCount}, {}, {j}}]:fill(1)
             if j <= 1000 then
                 elementCount = elementCount + 1
