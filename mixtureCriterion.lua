@@ -15,28 +15,37 @@ function MixtureCriterion:getMixMultVarGauss(sigma_t, mu_t, pi_t, xTarget, batch
     -- setting up terms for multivariate gaussian
     local sigmaTensorInverse = torch.pow(sigmaTensor, -1):cuda()
     
-    local sigmaDetermiant = (torch.cumprod(sigmaTensor, 3)[{{},{},{opt.inputSize}}]):squeeze(3):cuda()
+    --local sigmaDeterminant = (torch.cumprod(sigmaTensor, 3)[{{},{},{opt.inputSize}}]):squeeze(3):cuda()
+    local logsigmaDeterminant = (torch.sum(sigmaTensor, 3)):squeeze(3):cuda()
     local muResized = mu_t:clone():resize(batchSize, opt.numMixture, opt.inputSize):cuda()
     local xTargetResized = xTarget:clone():resize(batchSize, 1, opt.inputSize):cuda()
     local xTagetExpanded = xTargetResized:expand(batchSize, opt.numMixture, opt.inputSize):cuda()
     local xMinusMu = xTagetExpanded:cuda() - muResized
 
     -- first term 1/sqrt(2pi*det(sigma))
-    local term1 = ((torch.mul(sigmaDetermiant, (2*math.pi)^(opt.inputSize)):sqrt() + 1e-10):pow(-1)) --* ((2*math.pi)^(-opt.inputSize/2))
-
+    local term1 = torch.add(logsigmaDeterminant, (opt.inputSize)*torch.log(2*math.pi)):mul(-0.5)
+     --* ((2*math.pi)^(-opt.inputSize/2))
+    --local term1 = ((torch.mul(sigmaDetermiant, (2*math.pi)^(opt.inputSize)):sqrt() + 1e-10):pow(-1)) --* ((2*math.pi)^(-opt.inputSize/2))
+    --print('term1:',term1:norm())
     -- second term inv(sigma)*(x - mu) element-wise mult
     local term2 = torch.cmul(sigmaTensorInverse, xMinusMu)
-
+    --print('term2:',term2:norm())
     -- third term exp(transpose(x - mu)*term2)
     --local term3 = torch.exp(torch.sum(torch.cmul(xMinusMu, term2):mul(-0.5), 3):squeeze(3):clamp(-(1/0),80))
-    local term3 = torch.exp(torch.sum(torch.cmul(xMinusMu, term2):mul(-0.5), 3):squeeze(3))
-        
+    local term3 = (torch.sum(torch.cmul(xMinusMu, term2):mul(-0.5), 3):squeeze(3))
+    --print('term3:',term3:norm())
     -- fourth term term1*term3 element-wise mult
-    local term4 = torch.cmul(term1, term3)
-
+    local term4 = torch.add(term1, term3)
+    --print('term4:',term4:norm())
     -- fifth term pi*term4 element-wise mult
-    local term5 = torch.cmul(term4, pi_t:cuda())
-     
+    local term5 = torch.add(term4, pi_t:cuda():log())
+    --print('term5:',term5:norm())
+    ---- fourth term term1*term3 element-wise mult
+    --local term4 = torch.cmul(term1, term3)
+
+    ---- fifth term pi*term4 element-wise mult
+    --local term5 = torch.cmul(term4, pi_t:cuda())
+    -- 
 	--print(term5)
    
     return term5
@@ -99,19 +108,24 @@ function MixtureCriterion:updateOutput(input, target)
 
     -- Produce a diagonal matrix represented by a vector from values in sigma_t
     else
+        function logsumexp(x, dim)
+		local max, _maxindx = x:max(dim)
+		local normalized_x = torch.add(x, -max:expandAs(x))
+                local results = normalized_x:exp():sum(dim):log():add(max)
+		return results
+        end
         -- get mixture multivariate gaussian distributions on target values
         -- multiplied by respective mixture components
         --local mixGauss = self:getMixMultVarGauss(sigma_t:double(), mu_t:double(), pi_t:double(), xTarget:double(), batchsize)
-        local mixGauss = self:getMixMultVarGauss(sigma_t, mu_t, pi_t, xTarget, batchsize)
+        --local mixGauss = self:getMixMultVarGauss(sigma_t, mu_t, pi_t, xTarget, batchsize)
+        local logMixGauss = self:getMixMultVarGauss(sigma_t, mu_t, pi_t, xTarget, batchsize)
  --	print(mixGauss)       
-        local sumMixGauss = mixGauss:sum(2):squeeze(2)
-
+        --local sumMixGauss = mixGauss:sum(2):squeeze(2)
         -- apply log to sum of mixture multivariate gaussian
-        local logSumGauss = torch.log(sumMixGauss)
-        
+        --local logSumGauss = torch.log(sumMixGauss)
+        local logSumGauss = logsumexp(logMixGauss,2):squeeze(2)
         -- the loss function result
         lossOutput = torch.mul(logSumGauss, -1) 
-
         lossOutput = lossOutput:cmul(self.mask):sum()
 
         if self.sizeAverage then

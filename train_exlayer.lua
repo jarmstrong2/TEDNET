@@ -1,4 +1,5 @@
 require 'getbatch'
+require 'gnuplot'
 
 -- get training dataset
 STRAIGHTdata = torch.load('/home/jarmstrong/TEDNET/toy_600.t7')
@@ -51,7 +52,7 @@ end
 
 function getValLoss()
     local valnumberOfPasses = opt.numPasses
-    local valcount = 1
+    local valcount = 550
     local valsampleSize = opt.batchSize
     local loss = 0
     local elems = 0
@@ -145,7 +146,7 @@ function feval(x)
         = getBatch(count, STRAIGHTdata, sampleSize)
         ------------------------------------------------------------
 
-if count > 100 then
+if count > 500 then
 count = 1
 end
 
@@ -266,9 +267,9 @@ end
     return loss, grad_params
 end
 
-losses = {} 
-vallosses = {}
-local optim_state = {learningRate = opt.lr, alpha = 0.95, epsilon = 1e-5}
+vallosses = nil
+losses = nil 
+local optim_state = {learningRate = opt.lr, alpha = 0.95, epsilon = 1e-8}
 local iterations = 800000
 local minValLoss = 1/0
 for i = 1, iterations do
@@ -280,15 +281,43 @@ for i = 1, iterations do
     if i % 20 == 0 then
         print(string.format("iteration %4d, loss = %6.8f, gradnorm = %6.4e", i, loss[1], grad_params:norm()))
         valLoss = getValLoss()
-        vallosses[#vallosses + 1] = valLoss
+
+	if not vallosses and valLoss ~= 1/0 then
+	 	vallosses = torch.Tensor(1)
+	 	vallosses[1] = valLoss
+		valiter = torch.Tensor(1)
+		valiter[1] = i
+	else
+		vallossesaddition = torch.Tensor(1)
+                vallossesaddition[1] = valLoss
+                valiteraddition = torch.Tensor(1)
+                valiteraddition[1] = i
+		vallosses = torch.cat(vallosses:float(), vallossesaddition:float(), 1)
+		valiter = torch.cat(valiter, valiteraddition, 1)
+	end	
+	
         print(string.format("validation loss = %6.8f", valLoss))
         if minValLoss > valLoss then
             minValLoss = valLoss
             torch.save("tednet2.t7", model)
             print("------- Model Saved --------")
         end
-        losses[#losses + 1] = loss[1]
-        torch.save("losses2.t7", losses)
-        torch.save("vallosses2.t7", vallosses)
+        
+	if not losses and loss[1] ~= 1/0 then
+                losses = torch.Tensor(1)
+                losses[1] = loss[1]
+                iter = torch.Tensor(1)
+                iter[1] = i
+        else
+                lossesaddition = torch.Tensor(1,1)
+                lossesaddition[1] = loss[1]
+                iteraddition = torch.Tensor(1)
+                iteraddition[1] = i
+                losses = torch.cat(losses:float(), lossesaddition:float(),1)
+                iter = torch.cat(iter, iteraddition, 1)
+        end
+	gnuplot.pngfigure(opt.lossImageFN)
+	gnuplot.plot({iter, losses},{valiter, vallosses})
+	gnuplot.plotflush()
     end
 end
