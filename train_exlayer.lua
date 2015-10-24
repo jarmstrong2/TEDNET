@@ -289,32 +289,36 @@ for i = 1, iterations do
             print("------- Model Saved --------")
         end
         
-	if not vallosses and valLoss ~= 1/0 then
-	 	vallosses = torch.Tensor(1)
-	 	vallosses[1] = valLoss
-		valiter = torch.Tensor(1)
-		valiter[1] = i
-	else
-		vallossesaddition = torch.Tensor(1)
-                vallossesaddition[1] = valLoss
-                valiteraddition = torch.Tensor(1)
-                valiteraddition[1] = i
-		vallosses = torch.cat(vallosses:float(), vallossesaddition:float(), 1)
-		valiter = torch.cat(valiter, valiteraddition, 1)
-	end
+        if valLoss ~= 1/0 then
+		if not vallosses then
+		 	vallosses = torch.Tensor(1)
+		 	vallosses[1] = valLoss
+			valiter = torch.Tensor(1)
+			valiter[1] = i
+		else
+			vallossesaddition = torch.Tensor(1)
+        	        vallossesaddition[1] = valLoss
+        	        valiteraddition = torch.Tensor(1)
+        	        valiteraddition[1] = i
+			vallosses = torch.cat(vallosses:float(), vallossesaddition:float(), 1)
+			valiter = torch.cat(valiter, valiteraddition, 1)
+		end
+        end
         
-	if not losses and loss[1] ~= 1/0 then
-                losses = torch.Tensor(1)
-                losses[1] = loss[1]
-                iter = torch.Tensor(1)
-                iter[1] = i
-        else
-                lossesaddition = torch.Tensor(1,1)
-                lossesaddition[1] = loss[1]
-                iteraddition = torch.Tensor(1)
-                iteraddition[1] = i
-                losses = torch.cat(losses:float(), lossesaddition:float(),1)
-                iter = torch.cat(iter, iteraddition, 1)
+        if loss[1] ~= 1/0 then
+		if not losses then
+        	        losses = torch.Tensor(1)
+         		losses[1] = loss[1]
+                	iter = torch.Tensor(1)
+                	iter[1] = i
+        	else
+                	lossesaddition = torch.Tensor(1,1)
+                	lossesaddition[1] = loss[1]
+                	iteraddition = torch.Tensor(1)
+                	iteraddition[1] = i
+                	losses = torch.cat(losses:float(), lossesaddition:float(),1)
+                	iter = torch.cat(iter, iteraddition, 1)
+        	end
         end
 	gnuplot.pngfigure(opt.lossImageFN)
 	gnuplot.plot({iter, losses},{valiter, vallosses})
