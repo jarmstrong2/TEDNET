@@ -3,6 +3,13 @@ require 'cunn'
 
 local MixtureCriterion, parent = torch.class('nn.MixtureCriterion', 'nn.Criterion')
 
+function logsumexp(x, dim)
+	local max, _maxindx = x:max(dim)
+	local normalized_x = torch.add(x, -max:expandAs(x))
+	local results = normalized_x:exp():sum(dim):log():add(max)
+	return results
+end
+
 -- return multivariate gauss multiplied by their respective mixture 
 -- probabilities
 function MixtureCriterion:getMixMultVarGauss(sigma_t, mu_t, pi_t, xTarget, batchsize)
@@ -33,7 +40,7 @@ function MixtureCriterion:getMixMultVarGauss(sigma_t, mu_t, pi_t, xTarget, batch
     -- third term exp(transpose(x - mu)*term2)
     --local term3 = torch.exp(torch.sum(torch.cmul(xMinusMu, term2):mul(-0.5), 3):squeeze(3):clamp(-(1/0),80))
     local term3 = (torch.sum(torch.cmul(xMinusMu, term2):mul(-0.5), 3):squeeze(3))
-    print('term3:',term3:norm())
+    --print('term3:',term3:norm())
     -- fourth term term1*term3 element-wise mult
     local term4 = torch.add(term1, term3)
     --print('term4:',term4:norm())
@@ -108,12 +115,7 @@ function MixtureCriterion:updateOutput(input, target)
 
     -- Produce a diagonal matrix represented by a vector from values in sigma_t
     else
-        function logsumexp(x, dim)
-		local max, _maxindx = x:max(dim)
-		local normalized_x = torch.add(x, -max:expandAs(x))
-                local results = normalized_x:exp():sum(dim):log():add(max)
-		return results
-        end
+        
         -- get mixture multivariate gaussian distributions on target values
         -- multiplied by respective mixture components
         --local mixGauss = self:getMixMultVarGauss(sigma_t:double(), mu_t:double(), pi_t:double(), xTarget:double(), batchsize)
@@ -159,13 +161,14 @@ function MixtureCriterion:updateGradInput(input, target)
         -- get mixture multivariate gaussian distributions on target values
         -- multiplied by respective mixture components
         --local gammaHat = self:getMixMultVarGauss(sigma_t:double(), mu_t:double(), pi_t:double(), xTarget:double(), batchsize)
-        local gammaHat = self:getMixMultVarGauss(sigma_t, mu_t, pi_t, xTarget, batchsize)
+        --local gammaHat = self:getMixMultVarGauss(sigma_t, mu_t, pi_t, xTarget, batchsize)
+        local logGammaHat = self:getMixMultVarGauss(sigma_t, mu_t, pi_t, xTarget, batchsize)
         
-        local sumGammaHat = torch.sum(gammaHat, 2)
+        local logSumGammaHat = logsumexp(gammaHat, 2)
     
         -- expand to size of matrix gammaHat in order to compute gamma components
         -- for each entry
-        local sumGammaHatExpanded = sumGammaHat:expand(batchSize, opt.numMixture)
+        local sumGammaHatExpanded = logSumGammaHat:expand(batchSize, opt.numMixture)
     
         local gamma = torch.cmul(gammaHat, torch.pow(sumGammaHatExpanded + 1e-10, -1))
     
