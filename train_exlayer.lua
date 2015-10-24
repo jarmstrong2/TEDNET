@@ -278,10 +278,17 @@ for i = 1, iterations do
     local _, loss = optim.adam(feval, params, optim_state)
 
     print(string.format("update param, loss = %6.8f, gradnorm = %6.4e", loss[1], grad_params:clone():norm()))
-    if i % 20 == 0 then
+    if i % 200 == 0 then
         print(string.format("iteration %4d, loss = %6.8f, gradnorm = %6.4e", i, loss[1], grad_params:norm()))
         valLoss = getValLoss()
 
+        print(string.format("validation loss = %6.8f", valLoss))
+        if minValLoss > valLoss then
+            minValLoss = valLoss
+            torch.save("tednet2.t7", model)
+            print("------- Model Saved --------")
+        end
+        
 	if not vallosses and valLoss ~= 1/0 then
 	 	vallosses = torch.Tensor(1)
 	 	vallosses[1] = valLoss
@@ -294,14 +301,7 @@ for i = 1, iterations do
                 valiteraddition[1] = i
 		vallosses = torch.cat(vallosses:float(), vallossesaddition:float(), 1)
 		valiter = torch.cat(valiter, valiteraddition, 1)
-	end	
-	
-        print(string.format("validation loss = %6.8f", valLoss))
-        if minValLoss > valLoss then
-            minValLoss = valLoss
-            torch.save("tednet2.t7", model)
-            print("------- Model Saved --------")
-        end
+	end
         
 	if not losses and loss[1] ~= 1/0 then
                 losses = torch.Tensor(1)
