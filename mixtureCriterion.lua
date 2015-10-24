@@ -16,7 +16,7 @@ function MixtureCriterion:getMixMultVarGauss(sigma_t, mu_t, pi_t, xTarget, batch
     local sigmaTensorInverse = torch.pow(sigmaTensor, -1):cuda()
     
     --local sigmaDeterminant = (torch.cumprod(sigmaTensor, 3)[{{},{},{opt.inputSize}}]):squeeze(3):cuda()
-    local logsigmaDeterminant = torch.log((torch.sum(sigmaTensor, 3)):squeeze(3):cuda())
+    local logsigmaDeterminant = (torch.sum(torch.log(sigmaTensor), 3)):squeeze(3):cuda()
     local muResized = mu_t:clone():resize(batchSize, opt.numMixture, opt.inputSize):cuda()
     local xTargetResized = xTarget:clone():resize(batchSize, 1, opt.inputSize):cuda()
     local xTagetExpanded = xTargetResized:expand(batchSize, opt.numMixture, opt.inputSize):cuda()
