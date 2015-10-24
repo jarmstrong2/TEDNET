@@ -278,7 +278,7 @@ for i = 1, iterations do
     local _, loss = optim.adam(feval, params, optim_state)
 
     print(string.format("update param, loss = %6.8f, gradnorm = %6.4e", loss[1], grad_params:clone():norm()))
-    if i % 200 == 0 then
+    if i % 100 == 0 then
         print(string.format("iteration %4d, loss = %6.8f, gradnorm = %6.4e", i, loss[1], grad_params:norm()))
         valLoss = getValLoss()
 
