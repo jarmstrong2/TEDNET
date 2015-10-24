@@ -162,13 +162,13 @@ function MixtureCriterion:updateGradInput(input, target)
         -- multiplied by respective mixture components
         --local gammaHat = self:getMixMultVarGauss(sigma_t:double(), mu_t:double(), pi_t:double(), xTarget:double(), batchsize)
         --local gammaHat = self:getMixMultVarGauss(sigma_t, mu_t, pi_t, xTarget, batchsize)
-        local logGammaHat = self:getMixMultVarGauss(sigma_t, mu_t, pi_t, xTarget, batchsize)
+        local gammaHat = torch.exp(self:getMixMultVarGauss(sigma_t, mu_t, pi_t, xTarget, batchsize))
         
-        local logSumGammaHat = logsumexp(logGammaHat, 2)
+        local sumGammaHat = torch.sum(gammaHat, 2)
     
         -- expand to size of matrix gammaHat in order to compute gamma components
         -- for each entry
-        local sumGammaHatExpanded = logSumGammaHat:expand(batchSize, opt.numMixture)
+        local sumGammaHatExpanded = sumGammaHat:expand(batchSize, opt.numMixture)
     
         local gamma = torch.cmul(gammaHat, torch.pow(sumGammaHatExpanded + 1e-10, -1))
     
