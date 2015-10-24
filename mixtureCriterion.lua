@@ -164,7 +164,7 @@ function MixtureCriterion:updateGradInput(input, target)
         --local gammaHat = self:getMixMultVarGauss(sigma_t, mu_t, pi_t, xTarget, batchsize)
         local logGammaHat = self:getMixMultVarGauss(sigma_t, mu_t, pi_t, xTarget, batchsize)
         
-        local logSumGammaHat = logsumexp(gammaHat, 2)
+        local logSumGammaHat = logsumexp(logGammaHat, 2)
     
         -- expand to size of matrix gammaHat in order to compute gamma components
         -- for each entry
