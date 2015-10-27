@@ -161,8 +161,8 @@ function MixtureCriterion:updateGradInput(input, target)
         -- get mixture multivariate gaussian distributions on target values
         -- multiplied by respective mixture components
         --local gammaHat = self:getMixMultVarGauss(sigma_t:double(), mu_t:double(), pi_t:double(), xTarget:double(), batchsize)
-        --local gammaHat = self:getMixMultVarGauss(sigma_t, mu_t, pi_t, xTarget, batchsize)
-        local gammaHat = torch.exp(self:getMixMultVarGauss(sigma_t, mu_t, pi_t, xTarget, batchsize))
+        local gammaHat = self:getMixMultVarGauss(sigma_t, mu_t, pi_t, xTarget, batchsize)
+        --local gammaHat = torch.exp(self:getMixMultVarGauss(sigma_t, mu_t, pi_t, xTarget, batchsize))
         
         local sumGammaHat = torch.sum(gammaHat, 2)
     
