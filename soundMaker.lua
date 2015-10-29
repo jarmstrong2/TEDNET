@@ -13,6 +13,39 @@ require 'cunn'
 require 'distributions'
 local matio = require 'matio'
 
+function getX(output)
+	local piStart = 1
+    local piEnd = opt.numMixture
+    local pi_t = output[{{},{piStart,piEnd}}]
+
+	local sizeMeanInput = opt.inputSize * opt.numMixture
+	local sizeCovarianceInput = (((opt.inputSize)*(opt.inputSize+1))/2) * opt.numMixture
+
+	local muStart = piEnd + 1
+    local muEnd = piEnd + sizeMeanInput
+
+    local sigmaStart = muEnd + 1
+    local sigmaEnd = muEnd + sizeCovarianceInput
+
+    local chosenPi = torch.multinomial(pi_t, 1):squeeze()
+
+    local chosenMuStart = muStart + ((chosenPi - 1) * opt.inputSize)
+    local chosenMuEnd = chosenMuStart + (opt.inputSize - 1)
+
+    local chosenSigmaStart = sigmaStart + ((chosenPi - 1) * opt.inputSize)
+    local chosenSigmaEnd = chosenSigmaStart + (opt.inputSize - 1)
+
+    local mu_t = output[{{},{chosenMuStart,chosenMuEnd}}]
+
+    local sigma_t = output[{{},{chosenSigmaStart,chosenSigmaEnd}}]  
+
+    local sigma_diag = torch.diag(sigma_t)
+
+    sample = distributions.mvn.rnd(mu_t, sigma_diag)
+
+    return sample
+end
+
 local cmd = torch.CmdLine()
 
 cmd:text()
@@ -87,36 +120,3 @@ for t = 1, opt.maxlen - 1 do
 end
 
 matio.save('STRGHT.mat',straightMat)
-
-function getX(output)
-	local piStart = 1
-    local piEnd = opt.numMixture
-    local pi_t = output[{{},{piStart,piEnd}}]
-
-	local sizeMeanInput = opt.inputSize * opt.numMixture
-	local sizeCovarianceInput = (((opt.inputSize)*(opt.inputSize+1))/2) * opt.numMixture
-
-	local muStart = piEnd + 1
-    local muEnd = piEnd + sizeMeanInput
-
-    local sigmaStart = muEnd + 1
-    local sigmaEnd = muEnd + sizeCovarianceInput
-
-    local chosenPi = torch.multinomial(pi_t, 1):squeeze()
-
-    local chosenMuStart = muStart + ((chosenPi - 1) * opt.inputSize)
-    local chosenMuEnd = chosenMuStart + (opt.inputSize - 1)
-
-    local chosenSigmaStart = sigmaStart + ((chosenPi - 1) * opt.inputSize)
-    local chosenSigmaEnd = chosenSigmaStart + (opt.inputSize - 1)
-
-    local mu_t = output[{{},{chosenMuStart,chosenMuEnd}}]
-
-    local sigma_t = output[{{},{chosenSigmaStart,chosenSigmaEnd}}]  
-
-    local sigma_diag = torch.diag(sigma_t)
-
-    sample = distributions.mvn.rnd(mu_t, sigma_diag)
-
-    return sample
-end
