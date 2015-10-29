@@ -14,21 +14,18 @@ require 'distributions'
 local matio = require 'matio'
 
 function getX(output)
-	print(output)
-	local piStart = 1
+    local piStart = 1
     local piEnd = opt.numMixture
     local pi_t = output[{{},{piStart,piEnd}}]
 
-	local sizeMeanInput = opt.inputSize * opt.numMixture
-	local sizeCovarianceInput = (((opt.inputSize)*(opt.inputSize+1))/2) * opt.numMixture
+    local sizeMeanInput = opt.inputSize * opt.numMixture
+    local sizeCovarianceInput = opt.inputSize * opt.numMixture
 
-	local muStart = piEnd + 1
+    local muStart = piEnd + 1
     local muEnd = piEnd + sizeMeanInput
 
     local sigmaStart = muEnd + 1
-    local sigmaEnd = muEnd + sizeCovarianceInput
-
-    print(pi_t)	
+    local sigmaEnd = muEnd + sizeCovarianceInput	
 
     local chosenPi = torch.multinomial(pi_t, 1):squeeze()
 
@@ -40,13 +37,13 @@ function getX(output)
 
     local mu_t = output[{{},{chosenMuStart,chosenMuEnd}}]
 
-    local sigma_t = output[{{},{chosenSigmaStart,chosenSigmaEnd}}]  
+    local sigma_t = output[{{},{chosenSigmaStart,chosenSigmaEnd}}]
 
-    local sigma_diag = torch.diag(sigma_t)
+    local sigma_diag = torch.diag(sigma_t:squeeze())
 
-    sample = distributions.mvn.rnd(mu_t, sigma_diag)
+    sample = distributions.mvn.rnd(mu_t:double(), sigma_diag:double())
 
-    return sample
+    return sample:float():resize(1,opt.inputSize)
 end
 
 local cmd = torch.CmdLine()
@@ -100,21 +97,19 @@ local kappa_prev = {[0]=torch.zeros(1,10):cuda()}
 local output_h1_w = {}
 local input_h3_y = {}
 local output_h3_y = {}
-local output_y = {}
 
 -- FORWARD
 
 for t = 1, opt.maxlen - 1 do
     -- model 
-    output_y[t], kappa_prev[t], w[t], phi, lstm_c_h1[t], lstm_h_h1[t],
+    output_y, kappa_prev[t], w[t], phi, lstm_c_h1[t], lstm_h_h1[t],
     lstm_c_h2[t], lstm_h_h2[t], lstm_c_h3[t], lstm_h_h3[t]
-	= model.rnn_core:forward({x:cuda(), cuMat:cuda(), 
+	= unpack(model.rnn_core:forward({x:cuda(), cuMat:cuda(), 
          kappa_prev[t-1], w[t-1], lstm_c_h1[t-1], lstm_h_h1[t-1],
-         lstm_c_h2[t-1], lstm_h_h2[t-1], lstm_c_h3[t-1], lstm_h_h3[t-1]})
+         lstm_c_h2[t-1], lstm_h_h2[t-1], lstm_c_h3[t-1], lstm_h_h3[t-1]}))
 
 	-- perform op on x
-	output = output_y[t]
-	x = getX(output)
+	x = getX(output_y)
 	if straightMat then
 		straightMat = torch.cat(straightMat, x, 1)
 	else
@@ -122,4 +117,5 @@ for t = 1, opt.maxlen - 1 do
 	end
 end
 
-matio.save('STRGHT.mat',straightMat)
+torch.save('STRGHT.t7', straightMat)
+--matio.save('STRGHT.mat',straightMat)
