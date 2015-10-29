@@ -14,6 +14,7 @@ require 'distributions'
 local matio = require 'matio'
 
 function getX(output)
+	print(output)
 	local piStart = 1
     local piEnd = opt.numMixture
     local pi_t = output[{{},{piStart,piEnd}}]
