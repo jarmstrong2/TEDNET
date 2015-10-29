@@ -1,4 +1,4 @@
-re 'torch'
+require 'torch'
 require 'nn'
 require 'nngraph'
 require 'optim'
@@ -22,9 +22,9 @@ cmd:option('-inputSize' , 35, 'number of input dimension')
 cmd:option('-hiddenSize' , 400, 'number of hidden units in lstms')
 cmd:option('-maxlen' , 500, 'max sequence length')
 cmd:option('-isCovarianceFull' , false, 'true if full covariance, o.w. diagonal covariance')
-cmd:option('-numMixture' , 1, 'number of mixture components in output layer') 
+cmd:option('-numMixture' , 20, 'number of mixture components in output layer') 
 cmd:option('-modelFilename' , 'model.t7', 'model filename') 
-cmd:option('-testString' , 'testing', 'string for testing') 
+cmd:option('-testString' , 'but i do think they can have', 'string for testing') 
 
 cmd:text()
 opt = cmd:parse(arg)
@@ -34,7 +34,7 @@ cuMat = getOneHotStrs({[1]=opt.testString})
 model = torch.load(opt.modelFilename)
 
 -- LSTM initial state (zero initially, but final state gets sent to initial state when we do BPTT)
-initstate_h1_c = torch.zeros(sampleSize, opt.hiddenSize):cuda()
+initstate_h1_c = torch.zeros(1, opt.hiddenSize):cuda()
 initstate_h1_h = initstate_h1_c:clone()
 initstate_h2_c = initstate_h1_c:clone()
 initstate_h2_h = initstate_h1_c:clone()
@@ -59,7 +59,7 @@ local lstm_h_h2 = {[0]=initstate_h2_h} -- output values of LSTM
 local lstm_c_h3 = {[0]=initstate_h3_c} -- internal cell states of LSTM
 local lstm_h_h3 = {[0]=initstate_h3_h} -- output values of LSTM
 
-local kappa_prev = {[0]=torch.zeros(sampleSize,10):cuda()}
+local kappa_prev = {[0]=torch.zeros(1,10):cuda()}
 
 local output_h1_w = {}
 local input_h3_y = {}
@@ -68,13 +68,13 @@ local output_y = {}
 
 -- FORWARD
 
-for t = 1, maxLen - 1 do
+for t = 1, opt.maxlen - 1 do
     -- model 
     output_y[t], kappa_prev[t], w[t], phi, lstm_c_h1[t], lstm_h_h1[t],
     lstm_c_h2[t], lstm_h_h2[t], lstm_c_h3[t], lstm_h_h3[t]
-	= unpack(clones.rnn_core[t]:forward({x:cuda(), cuMat:cuda(), 
+	= model.rnn_core:forward({x:cuda(), cuMat:cuda(), 
          kappa_prev[t-1], w[t-1], lstm_c_h1[t-1], lstm_h_h1[t-1],
-         lstm_c_h2[t-1], lstm_h_h2[t-1], lstm_c_h3[t-1], lstm_h_h3[t-1]}))
+         lstm_c_h2[t-1], lstm_h_h2[t-1], lstm_c_h3[t-1], lstm_h_h3[t-1]})
 
 	-- perform op on x
 	output = output_y[t]
