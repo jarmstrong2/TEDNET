@@ -27,7 +27,7 @@ function getX(output)
     local sigmaStart = muEnd + 1
     local sigmaEnd = muEnd + sizeCovarianceInput	
 
-    local chosenPi = torch.multinomial(pi_t, 1):squeeze()
+    local chosenPi = torch.multinomial(torch.exp(pi_t), 1):squeeze()
 
     local chosenMuStart = muStart + ((chosenPi - 1) * opt.inputSize)
     local chosenMuEnd = chosenMuStart + (opt.inputSize - 1)
