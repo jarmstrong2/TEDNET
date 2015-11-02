@@ -17,7 +17,7 @@ function MixtureCriterion:getMixMultVarGauss(sigma_t, mu_t, logpi_t, xTarget, ba
     local sigmaTensor = sigma_t:clone():resize(batchSize, opt.numMixture, opt.inputSize)
 
     -- in order to perform inverse but with values on diagonal that might be zero
-    sigmaTensor:add(1e-10)
+    --sigmaTensor:add(1e-10)
 
     -- setting up terms for multivariate gaussian
     local sigmaTensorInverse = torch.pow(sigmaTensor, -1):cuda()
@@ -31,29 +31,14 @@ function MixtureCriterion:getMixMultVarGauss(sigma_t, mu_t, logpi_t, xTarget, ba
 
     -- first term 1/sqrt(2pi*det(sigma))
     local term1 = torch.add(logsigmaDeterminant, (opt.inputSize)*torch.log(2*math.pi)):mul(-0.5)
-     --* ((2*math.pi)^(-opt.inputSize/2))
-    --local term1 = ((torch.mul(sigmaDetermiant, (2*math.pi)^(opt.inputSize)):sqrt() + 1e-10):pow(-1)) --* ((2*math.pi)^(-opt.inputSize/2))
-    --print('term1:',term1:norm())
     -- second term inv(sigma)*(x - mu) element-wise mult
     local term2 = torch.cmul(sigmaTensorInverse, xMinusMu)
-    --print('term2:',term2:norm())
     -- third term exp(transpose(x - mu)*term2)
-    --local term3 = torch.exp(torch.sum(torch.cmul(xMinusMu, term2):mul(-0.5), 3):squeeze(3):clamp(-(1/0),80))
     local term3 = (torch.sum(torch.cmul(xMinusMu, term2):mul(-0.5), 3):squeeze(3))
-    --print('term3:',term3:norm())
     -- fourth term term1*term3 element-wise mult
     local term4 = torch.add(term1, term3)
-    --print('term4:',term4:norm())
     -- fifth term pi*term4 element-wise mult
     local term5 = torch.add(term4, logpi_t:cuda())
-    --print('term5:',term5:norm())
-    ---- fourth term term1*term3 element-wise mult
-    --local term4 = torch.cmul(term1, term3)
-
-    ---- fifth term pi*term4 element-wise mult
-    --local term5 = torch.cmul(term4, pi_t:cuda())
-    -- 
-	--print(term5)
    
     return term5
 end
@@ -118,10 +103,7 @@ function MixtureCriterion:updateOutput(input, target)
         
         -- get mixture multivariate gaussian distributions on target values
         -- multiplied by respective mixture components
-        --local mixGauss = self:getMixMultVarGauss(sigma_t:double(), mu_t:double(), pi_t:double(), xTarget:double(), batchsize)
-        --local mixGauss = self:getMixMultVarGauss(sigma_t, mu_t, pi_t, xTarget, batchsize)
         local logMixGauss = self:getMixMultVarGauss(sigma_t, mu_t, logpi_t, xTarget, batchsize)
- --	print(mixGauss)       
         --local sumMixGauss = mixGauss:sum(2):squeeze(2)
         -- apply log to sum of mixture multivariate gaussian
         --local logSumGauss = torch.log(sumMixGauss)
@@ -134,7 +116,6 @@ function MixtureCriterion:updateOutput(input, target)
             lossOutput = lossOutput/batchSize
         end
     end
-   -- print(lossOutput)
     return lossOutput
 end
 
@@ -160,11 +141,8 @@ function MixtureCriterion:updateGradInput(input, target)
         -- COMPUTE GAMMA
         -- get mixture multivariate gaussian distributions on target values
         -- multiplied by respective mixture components
-        --local gammaHat = self:getMixMultVarGauss(sigma_t:double(), mu_t:double(), pi_t:double(), xTarget:double(), batchsize)
-        --local gammaHat = self:getMixMultVarGauss(sigma_t, mu_t, pi_t, xTarget, batchsize)
         local logGammaHat = (self:getMixMultVarGauss(sigma_t, mu_t, logpi_t, xTarget, batchsize))
         
-        --local sumGammaHat = torch.sum(gammaHat, 2)
         local logsumGammaHat = logsumexp(logGammaHat, 2)
         -- expand to size of matrix gammaHat in order to compute gamma components
         -- for each entry
@@ -184,14 +162,9 @@ function MixtureCriterion:updateGradInput(input, target)
         local xMinusMu = xTagetExpanded:cuda() - muResized
     
         -- setting up terms for multivariate gaussian
-        --local sigmaTensorInverse = torch.pow(sigmaTensor, -1):cuda()
         
         -- COMPUTE dL(x)/d(pi_t_hat)
-        --local d_pi_t_hat = torch.cmul(gamma, (torch.add(pi_t, -1)))
-        --local d_pi_t_hat = torch.mul(torch.cmul(gamma, (torch.pow(torch.add(pi_t, 1e-10), -1))), -1)
-        
-        local d_pi_t_hat = logpi_t:cuda():exp() - gamma
-        --local d_pi_t_hat = logpi_t:cuda():exp() - gamma
+        local d_pi_t_hat = - gamma
     
         -- COMPUTE dL(x)/d(mu_t_hat)
         local dl_mu_t_hat = torch.cmul(xMinusMu, sigmaTensorInverse)
@@ -208,8 +181,6 @@ function MixtureCriterion:updateGradInput(input, target)
     
         local grad_input = torch.cat(d_pi_t_hat:float(), dl_mu_t_hat:float())
         grad_input = torch.cat(grad_input, dl_sigma_t_hat:float())
---	print("gin")
---	print(grad_input)
 
         self.gradInput = grad_input:cuda()
         self.gradInput:cmul(self.mask:reshape(self.mask:size(1),1):expand(self.gradInput:size()))
