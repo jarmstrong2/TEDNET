@@ -15,7 +15,7 @@ print('uploaded validation data')
 
 print('start training')
 
-params:uniform(-0.000001, 0.000001)
+params:uniform(-0.0008, 0.0008)
 sampleSize = opt.batchSize
 numberOfPasses = opt.numPasses
 
@@ -28,6 +28,8 @@ initstate_h3_c = initstate_h1_c:clone()
 initstate_h3_h = initstate_h1_c:clone()
 initstate_h4_c = initstate_h1_c:clone()
 initstate_h4_h = initstate_h1_c:clone()
+initstate_h5_c = initstate_h1_c:clone()
+initstate_h5_h = initstate_h1_c:clone()
 
 -- LSTM final state's backward message (dloss/dfinalstate) is 0, since it doesn't influence predictions
 dfinalstate_h1_c = initstate_h1_c:clone()
@@ -38,6 +40,8 @@ dfinalstate_h3_c = initstate_h1_c:clone()
 dfinalstate_h3_h = initstate_h1_c:clone()
 dfinalstate_h4_c = initstate_h1_c:clone()
 dfinalstate_h4_h = initstate_h1_c:clone()
+dfinalstate_h5_c = initstate_h1_c:clone()
+dfinalstate_h5_h = initstate_h1_c:clone()
 initkappa = torch.randn(sampleSize,10)
 dinitkappa = torch.zeros(sampleSize,10)
 
@@ -79,7 +83,9 @@ function getValLoss()
         local lstm_c_h3 = {[0]=initstate_h3_c} -- internal cell states of LSTM
         local lstm_h_h3 = {[0]=initstate_h3_h} -- output values of LSTM
         local lstm_c_h4 = {[0]=initstate_h4_c} -- internal cell states of LSTM
-        local lstm_h_h4 = {[0]=initstate_h4_h} -- output values of LSTM        
+        local lstm_h_h4 = {[0]=initstate_h4_h} -- output values of LSTM  
+        local lstm_c_h5 = {[0]=initstate_h5_c} -- internal cell states of LSTM
+        local lstm_h_h5 = {[0]=initstate_h5_h} -- output values of LSTM  
 
         local kappa_prev = {[0]=torch.zeros(sampleSize,10):cuda()}
         
@@ -96,10 +102,11 @@ function getValLoss()
 
             -- model 
             output_y[t], kappa_prev[t], w[t], _, lstm_c_h1[t], lstm_h_h1[t],
-            lstm_c_h2[t], lstm_h_h2[t], lstm_c_h3[t], lstm_h_h3[t], lstm_c_h4[t], lstm_h_h4[t]
+            lstm_c_h2[t], lstm_h_h2[t], lstm_c_h3[t], lstm_h_h3[t], lstm_c_h4[t], lstm_h_h4[t], lstm_c_h5[t], lstm_h_h5[t]
         = unpack(clones.rnn_core[t]:forward({x_in:cuda(), cuMat:cuda(), 
                  kappa_prev[t-1], w[t-1], lstm_c_h1[t-1], lstm_h_h1[t-1],
-                 lstm_c_h2[t-1], lstm_h_h2[t-1], lstm_c_h3[t-1], lstm_h_h3[t-1], lstm_c_h4[t-1], lstm_h_h4[t-1]}))
+                 lstm_c_h2[t-1], lstm_h_h2[t-1], lstm_c_h3[t-1], lstm_h_h3[t-1], lstm_c_h4[t-1], lstm_h_h4[t-1], 
+                 lstm_c_h5[t-1], lstm_h_h5[t-1]}))
        
             -- criterion 
             clones.criterion[t]:setmask(cmaskMat[{{},{},{t}}]:cuda())
@@ -118,6 +125,10 @@ function getValLoss()
         lstm_h_h2 = nil -- output values of LSTM
         lstm_c_h3 = nil -- internal cell states of LSTM
         lstm_h_h3 = nil -- output values of LSTM
+        lstm_c_h4 = nil -- internal cell states of LSTM
+        lstm_h_h4 = nil -- output values of LSTM
+        lstm_c_h5 = nil -- internal cell states of LSTM
+        lstm_h_h5 = nil -- output values of LSTM
         kappa_prev = nil
         output_h1_w = nil
         input_h3_y = nil
@@ -165,6 +176,8 @@ function feval(x)
         local lstm_h_h3 = {[0]=initstate_h3_h} -- output values of LSTM
         local lstm_c_h4 = {[0]=initstate_h4_c} -- internal cell states of LSTM
         local lstm_h_h4 = {[0]=initstate_h4_h} -- output values of LSTM
+        local lstm_c_h5 = {[0]=initstate_h5_c} -- internal cell states of LSTM
+        local lstm_h_h5 = {[0]=initstate_h5_h} -- output values of LSTM  
         
         local kappa_prev = {[0]=torch.zeros(sampleSize,10):cuda()}
         
@@ -181,10 +194,11 @@ function feval(x)
 
             -- model 
             output_y[t], kappa_prev[t], w[t], _, lstm_c_h1[t], lstm_h_h1[t],
-            lstm_c_h2[t], lstm_h_h2[t], lstm_c_h3[t], lstm_h_h3[t], lstm_c_h4[t], lstm_h_h4[t]
+            lstm_c_h2[t], lstm_h_h2[t], lstm_c_h3[t], lstm_h_h3[t], lstm_c_h4[t], lstm_h_h4[t], lstm_c_h5[t], lstm_h_h5[t]
         = unpack(clones.rnn_core[t]:forward({x_in:cuda(), cuMat:cuda(), 
                  kappa_prev[t-1], w[t-1], lstm_c_h1[t-1], lstm_h_h1[t-1],
-                 lstm_c_h2[t-1], lstm_h_h2[t-1], lstm_c_h3[t-1], lstm_h_h3[t-1], lstm_c_h4[t-1], lstm_h_h4[t-1]}))
+                 lstm_c_h2[t-1], lstm_h_h2[t-1], lstm_c_h3[t-1], lstm_h_h3[t-1], lstm_c_h4[t-1], lstm_h_h4[t-1],
+                 lstm_c_h5[t-1], lstm_h_h5[t-1]}))
        
             -- criterion 
             clones.criterion[t]:setmask(cmaskMat[{{},{},{t}}]:cuda())
@@ -206,6 +220,8 @@ function feval(x)
         local dlstm_h_h3 = dfinalstate_h3_h
         local dlstm_c_h4 = dfinalstate_h4_c
         local dlstm_h_h4 = dfinalstate_h4_h
+        local dlstm_c_h5 = dfinalstate_h5_c
+        local dlstm_h_h5 = dfinalstate_h5_h
         
         local dh1_w = torch.zeros(sampleSize, 32):cuda()
         local dkappa = torch.zeros(sampleSize, 10):cuda()
@@ -220,11 +236,11 @@ function feval(x)
             	
             -- model
             _x, _c, dkappa, dh1_w, dlstm_c_h1, dlstm_h_h1,
-            dlstm_c_h2, dlstm_h_h2, dlstm_c_h3, dlstm_h_h3 = unpack(clones.rnn_core[t]:backward({x_in:cuda(), cuMat:cuda(), 
+            dlstm_c_h2, dlstm_h_h2, dlstm_c_h3, dlstm_h_h3, dlstm_c_h4, dlstm_h_h4, dlstm_c_h5, dlstm_h_h5 = unpack(clones.rnn_core[t]:backward({x_in:cuda(), cuMat:cuda(), 
                  kappa_prev[t-1], w[t-1], lstm_c_h1[t-1], lstm_h_h1[t-1],
                  lstm_c_h2[t-1], lstm_h_h2[t-1], lstm_c_h3[t-1], lstm_h_h3[t-1], lstm_c_h4[t-1], lstm_h_h4[t-1]},
                  {grad_crit:cuda(), dkappa, dh1_w, _, dlstm_c_h1, dlstm_h_h1, 
-                  dlstm_c_h2, dlstm_h_h2, dlstm_c_h3, dlstm_h_h3, dlstm_c_h4, dlstm_h_h4}))
+                  dlstm_c_h2, dlstm_h_h2, dlstm_c_h3, dlstm_h_h3, dlstm_c_h4, dlstm_h_h4, dlstm_c_h5, dlstm_h_h5}))
         end
 
         dh2_w = nil
