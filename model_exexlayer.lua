@@ -59,7 +59,7 @@ local h5_h = nn.SelectTable(2)(h5)
 
 --if opt.isCovarianceFull then
 --else
-	local y = nn.YHat()(nn.Linear(opt.hiddenSize*4, (opt.numMixture + 2 * (opt.inputSize * opt.numMixture)))
+	local y = nn.YHat()(nn.Linear(opt.hiddenSize*5, (opt.numMixture + 2 * (opt.inputSize * opt.numMixture)))
 		(nn.JoinTable(2)({h1_h, h2_h, h3_h, h4_h, h5_h})))
 --end
 
