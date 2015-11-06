@@ -119,7 +119,7 @@ function getValLoss()
         output_y = nil
         collectgarbage()
     end
-    return loss
+    return loss/valnumberOfPasses
 end
 
 -- do fwd/bwd and return loss, grad_params
@@ -250,7 +250,7 @@ function feval(x)
     -- clip gradient element-wise
     grad_params:clamp(-opt.gradClip, opt.gradClip)
      
-    return loss, grad_params
+    return loss/numberOfPasses, grad_params
 end
 
 vallosses = nil
