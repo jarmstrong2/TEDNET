@@ -33,6 +33,8 @@ local input_lstm_h3_h = nn.Identity()()
 local input_lstm_h3_c = nn.Identity()()
 local input_lstm_h4_h = nn.Identity()()
 local input_lstm_h4_c = nn.Identity()()
+local input_lstm_h5_h = nn.Identity()()
+local input_lstm_h5_c = nn.Identity()()
 local input_prev_kappa = nn.Identity()()
 
 local h1 = LSTMH1.lstm(opt.inputSize, opt.hiddenSize)({input_xin, input_w_prev, input_lstm_h1_c, input_lstm_h1_h})
@@ -51,20 +53,24 @@ local h3_h = nn.SelectTable(2)(h3)
 local h4 = LSTMHN.lstm(opt.inputSize, opt.hiddenSize)({input_xin, w_vector, h3_h, input_lstm_h4_c, input_lstm_h4_h})
 local h4_c = nn.SelectTable(1)(h4)
 local h4_h = nn.SelectTable(2)(h4)
+local h5 = LSTMHN.lstm(opt.inputSize, opt.hiddenSize)({input_xin, w_vector, h4_h, input_lstm_h5_c, input_lstm_h5_h})
+local h5_c = nn.SelectTable(1)(h5)
+local h5_h = nn.SelectTable(2)(h5)
 
 --if opt.isCovarianceFull then
 --else
 	local y = nn.YHat()(nn.Linear(opt.hiddenSize*4, (opt.numMixture + 2 * (opt.inputSize * opt.numMixture)))
-		(nn.JoinTable(2)({h1_h, h2_h, h3_h, h4_h})))
+		(nn.JoinTable(2)({h1_h, h2_h, h3_h, h4_h, h5_h})))
 --end
 
 model.rnn_core = nn.gModule({input_xin, input_context, input_prev_kappa, input_w_prev,  
                              input_lstm_h1_c, input_lstm_h1_h,
                              input_lstm_h2_c, input_lstm_h2_h,
                              input_lstm_h3_c, input_lstm_h3_h,
-                             input_lstm_h4_c, input_lstm_h4_h},
+                             input_lstm_h4_c, input_lstm_h4_h,
+                             input_lstm_h5_c, input_lstm_h5_h,},
                             {y, w_kappas_t, w_vector, w_phi_t, h1_c, h1_h, h2_c, h2_h,
-                             h3_c, h3_h, h4_c, h4_h})
+                             h3_c, h3_h, h4_c, h4_h, h5_c, h5_h})
 
 model.rnn_core:cuda()
 params, grad_params = model.rnn_core:getParameters()
