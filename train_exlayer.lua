@@ -2,13 +2,13 @@ require 'getbatch'
 require 'gnuplot'
 
 -- get training dataset
-STRAIGHTdata = torch.load('/home/jarmstrong/TEDNET/toy_600.t7')
+STRAIGHTdata = torch.load('/home/jarmstrong/TEDNET/toy_35_500_zero.t7')
 dataSize = #STRAIGHTdata
 
 print('uploaded training data')
 
 -- get validation dataset
-valSTRAIGHTdata = torch.load('/home/jarmstrong/TEDNET/toy_600.t7')
+valSTRAIGHTdata = torch.load('/home/jarmstrong/TEDNET/toy_35_500_zero.t7')
 valdataSize = #valSTRAIGHTdata
 
 print('uploaded validation data')
