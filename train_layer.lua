@@ -276,7 +276,7 @@ for i = 1, iterations do
         end
         
         if valLoss ~= 1/0 then
-		if not vallosses or (#vallosses)[1] >= 10000 then
+		if not vallosses or (#vallosses)[1] >= 900 then
 		 	vallosses = torch.Tensor(1)
 		 	vallosses[1] = valLoss
 			valiter = torch.Tensor(1)
@@ -292,7 +292,7 @@ for i = 1, iterations do
         end
         
         if loss[1] ~= 1/0 then
-		if not losses or (#losses)[1] >= 10000 then
+		if not losses or (#losses)[1] >= 900 then
         	        losses = torch.Tensor(1)
          		losses[1] = loss[1]
                 	iter = torch.Tensor(1)
