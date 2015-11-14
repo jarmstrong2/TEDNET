@@ -56,7 +56,7 @@ cmd:option('-hiddenSize' , 800, 'number of hidden units in lstms')
 cmd:option('-maxlen' , 500, 'max sequence length')
 cmd:option('-isCovarianceFull' , false, 'true if full covariance, o.w. diagonal covariance')
 cmd:option('-numMixture' , 20, 'number of mixture components in output layer') 
-cmd:option('-modelFilename' , 'model.t7', 'model filename') 
+cmd:option('-modelFilename' , 'model_exlayer.t7', 'model filename') 
 cmd:option('-testString' , 'but i do think they can have', 'string for testing') 
 
 cmd:text()
