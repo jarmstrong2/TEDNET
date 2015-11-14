@@ -52,7 +52,7 @@ cmd:text()
 cmd:text('Script for training model.')
 
 cmd:option('-inputSize' , 35, 'number of input dimension')
-cmd:option('-hiddenSize' , 400, 'number of hidden units in lstms')
+cmd:option('-hiddenSize' , 800, 'number of hidden units in lstms')
 cmd:option('-maxlen' , 500, 'max sequence length')
 cmd:option('-isCovarianceFull' , false, 'true if full covariance, o.w. diagonal covariance')
 cmd:option('-numMixture' , 20, 'number of mixture components in output layer') 
@@ -75,6 +75,8 @@ initstate_h2_c = initstate_h1_c:clone()
 initstate_h2_h = initstate_h1_c:clone()
 initstate_h3_c = initstate_h1_c:clone()
 initstate_h3_h = initstate_h1_c:clone()
+initstate_h4_c = initstate_h1_c:clone()
+initstate_h4_h = initstate_h1_c:clone()
 
 -- initialize input
 x = torch.zeros(1,opt.inputSize)
@@ -93,6 +95,8 @@ local lstm_c_h2 = {[0]=initstate_h2_c} -- internal cell states of LSTM
 local lstm_h_h2 = {[0]=initstate_h2_h} -- output values of LSTM
 local lstm_c_h3 = {[0]=initstate_h3_c} -- internal cell states of LSTM
 local lstm_h_h3 = {[0]=initstate_h3_h} -- output values of LSTM
+local lstm_c_h4 = {[0]=initstate_h3_c} -- internal cell states of LSTM
+local lstm_h_h4 = {[0]=initstate_h3_h} -- output values of LSTM
 
 local kappa_prev = {[0]=torch.zeros(1,10):cuda()}
 
@@ -105,10 +109,10 @@ local output_h3_y = {}
 for t = 1, opt.maxlen - 1 do
     -- model 
     output_y, kappa_prev[t], w[t], phi, lstm_c_h1[t], lstm_h_h1[t],
-    lstm_c_h2[t], lstm_h_h2[t], lstm_c_h3[t], lstm_h_h3[t]
+    lstm_c_h2[t], lstm_h_h2[t], lstm_c_h3[t], lstm_h_h3[t], lstm_c_h4[t], lstm_h_h4[t]
 	= unpack(model.rnn_core:forward({x:cuda(), cuMat:cuda(), 
          kappa_prev[t-1], w[t-1], lstm_c_h1[t-1], lstm_h_h1[t-1],
-         lstm_c_h2[t-1], lstm_h_h2[t-1], lstm_c_h3[t-1], lstm_h_h3[t-1]}))
+         lstm_c_h2[t-1], lstm_h_h2[t-1], lstm_c_h3[t-1], lstm_h_h3[t-1], lstm_c_h4[t-1], lstm_h_h4[t-1]}))
 
 	-- perform op on x
 	x = getX(output_y)
