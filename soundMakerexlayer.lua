@@ -123,5 +123,15 @@ for t = 1, opt.maxlen - 1 do
 	end
 end
 
-torch.save('STRGHT.t7', straightMat)
+--torch.save('STRGHT.t7', straightMat)
 --matio.save('STRGHT.mat',straightMat)
+
+straightMat:mul(0.80)
+std = torch.load('toy_std_35.t7')
+mean1 = torch.load('toy_mean_35.t7')
+rs_std = torch.expand(std, 499, 35)
+rs_mean = torch.expand(mean1, 499, 35)
+newin = torch.cmul(input:float(), rs_std:float())
+newin = newin:float() + rs_mean:float()
+matio.save('strght1.mat', newin)
+
